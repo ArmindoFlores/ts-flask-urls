@@ -1,0 +1,26 @@
+[project]
+version = "0.0.1"
+name = "ts-flask-urls"
+description = "Lovely Spam! Wonderful Spam!"
+readme = "README.md"
+license-files = ["LICENSE"]
+dependencies = [
+  "click",
+  "flask"
+]
+requires-python = ">= 3.12"
+authors = [
+  {name = "Francisco Rodrigues", email = "francisc.rodrigues0908@gmail.com"},
+]
+
+[project.optional-dependencies]
+dev = [
+]
+
+[dependency-groups]
+dev = [
+    "ty>=0.0.11",
+    "Flask-CORS",
+    "pytest>=9.0.2",
+    "types-flask-cors>=6.0.0.20250809",
+]
