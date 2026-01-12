@@ -214,7 +214,7 @@ class FlaskAnnotationsParser:
         return TSTuple(args)
 
     def _generate_ts_typeddict(self, python_type: typing.Any, args: dict[str, TSType]) -> TSObject:
-        origin = typing.get_origin(python_type)
+        origin = typing.get_origin(python_type) or python_type
         hints = get_type_hints(origin)
         keys = tuple(hints.keys())
         required = tuple(typing.get_origin(value) is not typing.NotRequired for value in hints.values())
