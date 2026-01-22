@@ -31,9 +31,6 @@ class TypeNode:
         return s + ">"
 
 
-type Recursive3[A, B, C] = tuple[A | Recursive3[int, C, B], ...]
-
-
 def to_type_node(
     type_: typing.Any, original_type: TypeNode = None, mapping=None
 ) -> TypeNode:
