@@ -2,6 +2,14 @@ import dataclasses
 import typing
 
 
+class RecursiveCallClass:
+    def __repr__(self):
+        return "RecursiveCall"
+
+
+RecursiveCall = RecursiveCallClass()
+
+
 @dataclasses.dataclass(frozen=True)
 class TypeNode:
     origin: typing.Any
@@ -23,15 +31,57 @@ class TypeNode:
         return s + ">"
 
 
-def to_type_node(type_: typing.Any) -> TypeNode:
+type Recursive3[A, B, C] = tuple[A | Recursive3[int, C, B], ...]
+
+
+def to_type_node(
+    type_: typing.Any, original_type: TypeNode = None, mapping=None
+) -> TypeNode:
+    mapping = {} if mapping is None else mapping
     origin = typing.get_origin(type_) or type_
+    params: tuple[typing.TypeVar, ...] = getattr(origin, "__type_params__", ())
+    args = tuple(
+        to_type_node(arg, original_type, mapping) for arg in typing.get_args(type_)
+    )
+    hints = {
+        key: to_type_node(hint, original_type, mapping)
+        for key, hint in getattr(origin, "__annotations__", {}).items()
+    }
+    patched_args = args
+    if original_type is not None and origin is original_type.origin:
+        mapping = {
+            param: mapping.get(arg.origin, arg)
+            for param, arg in zip(original_type.params, args, strict=True)
+        }
+        patched_args = tuple(mapping[param] for param in params)
+        if all(
+            (
+                arg.origin == original_param
+                for arg, original_param in zip(
+                    patched_args, original_type.params, strict=True
+                )
+            )
+        ):
+            origin = RecursiveCall
+
     return TypeNode(
         origin=origin,
-        params=getattr(origin, "__type_params__", ()),
-        args=tuple(to_type_node(arg) for arg in typing.get_args(type_)),
-        hints={
-            key: to_type_node(hint)
-            for key, hint in getattr(origin, "__annotations__", {}).items()
-        },
-        value=to_type_node(origin.__value__) if hasattr(origin, "__value__") else None,
+        params=params,
+        args=args,
+        hints=hints,
+        value=(
+            to_type_node(
+                origin.__value__,
+                TypeNode(
+                    origin=origin,
+                    params=params,
+                    args=patched_args,
+                    hints=hints,
+                    value=None,
+                ),
+                mapping=mapping,
+            )
+            if hasattr(origin, "__value__")
+            else None
+        ),
     )

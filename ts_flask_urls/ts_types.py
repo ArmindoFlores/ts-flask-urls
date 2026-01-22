@@ -15,8 +15,8 @@ from collections.abc import Sequence
 
 
 @cache
-def generate(type_: "TSType"):
-    return str(type_)
+def generate(type_: "TSType", type_name: str | None = None):
+    return type_._generate(type_name)
 
 
 class TSType(ABC):
@@ -37,18 +37,18 @@ class TSType(ABC):
         return hash(str(self))
 
     @abstractmethod
-    def _generate(self) -> str:
+    def _generate(self, type_name: str | None = None) -> str:
         raise NotImplementedError
 
-    def generate(self) -> str:
-        return generate(self)
+    def generate(self, type_name: str | None = None) -> str:
+        return generate(self, type_name)
 
 
 class TSSimpleType(TSType):
     def __init__(self, type_: str):
         self.type_ = type_
 
-    def _generate(self) -> str:
+    def _generate(self, _: str | None = None) -> str:
         if self.type_ == "...":
             return "never"
         return self.type_
@@ -59,8 +59,11 @@ class TSRecord(TSType):
         self.key_type: TSType = key_type
         self.value_type: TSType = value_type
 
-    def _generate(self) -> str:
-        return f"Record<{self.key_type.generate()}, {self.value_type.generate()}>"
+    def _generate(self, type_name: str | None = None) -> str:
+        return (
+            f"Record<{self.key_type.generate(type_name)}, "
+            f"{self.value_type.generate(type_name)}>"
+        )
 
 
 class TSObject(TSType):
@@ -74,7 +77,7 @@ class TSObject(TSType):
         self.value_types: Sequence[TSType] = value_types
         self.required: Sequence[bool] = required or [True for _ in self.keys]
 
-    def _generate(self) -> str:
+    def _generate(self, type_name: str | None = None) -> str:
         string = ""
         first = True
         for key, value_type, required in zip(
@@ -82,7 +85,7 @@ class TSObject(TSType):
         ):
             string += (
                 f"{'' if first else ' '}{key}{'' if required else '?'}: "
-                f"{value_type.generate()};"
+                f"{value_type.generate(type_name)};"
             )
             first = False
         return f"{{{string}}}"
@@ -94,23 +97,28 @@ class TSAggregatorType(TSType):
 
 
 class TSUnion(TSAggregatorType):
-    def _generate(self) -> str:
-        return " | ".join([t.generate() for t in self.types])
+    def _generate(self, type_name: str | None = None) -> str:
+        return " | ".join([t.generate(type_name) for t in self.types])
 
 
 class TSTuple(TSAggregatorType):
-    def _generate(self) -> str:
-        return "[" + ", ".join([t.generate() for t in self.types]) + "]"
+    def _generate(self, type_name: str | None = None) -> str:
+        return "[" + ", ".join([t.generate(type_name) for t in self.types]) + "]"
 
 
 class TSArray(TSType):
     def __init__(self, type_: TSType):
         self.type_: TSType = type_
 
-    def _generate(self) -> str:
+    def _generate(self, type_name: str | None = None) -> str:
         if isinstance(self.type_, TSUnion):
-            return f"({self.type_.generate()})[]"
-        return f"{self.type_.generate()}[]"
+            return f"({self.type_.generate(type_name)})[]"
+        return f"{self.type_.generate(type_name)}[]"
+
+
+class TSRecursiveType(TSType):
+    def _generate(self, type_name: str | None = None) -> str:
+        return "=Self" if type_name is None else type_name
 
 
 def is_signal(t: TSType):

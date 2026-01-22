@@ -29,7 +29,7 @@ type GenericParamValues = dict[typing.TypeVar, TypeTree]
 
 class Logger(typing.Protocol):
     def info(self, text: str) -> None: ...
-    def warn(self, text: str) -> None: ...
+    def warning(self, text: str) -> None: ...
     def error(self, text: str) -> None: ...
 
 
@@ -39,7 +39,7 @@ class ClickLogger:
         click.echo(f"Info: {text}")
 
     @staticmethod
-    def warn(text: str) -> None:
+    def warning(text: str) -> None:
         click.secho(f"Warning: {text}", fg="yellow")
 
     @staticmethod
@@ -262,9 +262,12 @@ class CodeWriter:
     def _write_types(
         self, rule_name: str, return_type: TSType, args_type: TSType
     ) -> None:
+        return_type_name = f"{rule_name}_ReturnType"
         self.types_file.write(
-            f"export type {rule_name}_ReturnType = {return_type.generate()};\n"
+            f"export type {return_type_name} = {return_type.generate(return_type_name)}"
+            ";\n"
         )
+        args_type_name = f"{rule_name}_ArgsType"
         self.types_file.write(
-            f"export type {rule_name}_ArgsType = {args_type.generate()};\n\n"
+            f"export type {args_type_name} = {args_type.generate(args_type_name)};\n\n"
         )

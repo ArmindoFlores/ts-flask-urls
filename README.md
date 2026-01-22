@@ -25,9 +25,11 @@ Some features are already implemented, others are planned.
 - [ ] Improved error reporting for unsupported or ambiguous annotations
 - [ ] Optional generation modes (types only, requests only)
 - [ ] Configuration file support
-- [ ] Handle recursive types (such as `type RecursiveType = tuple[int, RecursiveType]`)
+- [x] Handle recursive types (such as `type RecursiveType = tuple[int, RecursiveType]`)*
 - [x] Support returning with `jsonify(...)`
 - [x] Support extensions via translators
+
+\* Not all cases are supported.
 
 ## Installation
 

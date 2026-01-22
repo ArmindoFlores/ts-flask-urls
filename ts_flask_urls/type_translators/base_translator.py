@@ -2,12 +2,13 @@ import types
 import typing
 
 from .abstract import Translator
-from .type_node import TypeNode
+from .type_node import TypeNode, RecursiveCall
 from ts_flask_urls.ts_types import (
     TSArray,
     TSObject,
     TSType,
     TSRecord,
+    TSRecursiveType,
     TSSimpleType,
     TSTuple,
     TSUnion,
@@ -117,10 +118,18 @@ class BaseTranslator(Translator):
             node.value, dict(zip(node.params, translated_args, strict=True))
         )
 
+    def _translate_recursive_call(
+        self, node: TypeNode, generics: dict[typing.TypeVar, TSType]
+    ) -> TSType | None:
+        return TSRecursiveType()
+
     def translate(
         self, node: TypeNode, generics: dict[typing.TypeVar, TSType] | None
     ) -> TSType | None:
         generics = generics or {}
+
+        if node.origin is RecursiveCall:
+            return self._translate_recursive_call(node, generics)
 
         if isinstance(node.origin, typing.TypeAliasType):
             return self._translate_type_alias(node, generics)
