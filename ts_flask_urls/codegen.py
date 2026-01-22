@@ -3,7 +3,14 @@ import typing
 
 import click
 from flask import Flask
-from werkzeug.routing import FloatConverter, BaseConverter, IntegerConverter, UUIDConverter, PathConverter, UnicodeConverter
+from werkzeug.routing import (
+    FloatConverter,
+    BaseConverter,
+    IntegerConverter,
+    UUIDConverter,
+    PathConverter,
+    UnicodeConverter,
+)
 from werkzeug.routing.rules import Rule
 
 from .ts_types import TSType, TSSimpleType, TSObject
@@ -45,33 +52,46 @@ def get_type_hints(tp: typing.Any) -> dict[str, typing.Any]:
 
 
 class FlaskAnnotationsParser:
-    def __init__(self, app: Flask, rule: Rule, translators: tuple[typing.Type["Translator"]] | None = None, logger: Logger | None = None) -> None:
+    def __init__(
+        self,
+        app: Flask,
+        rule: Rule,
+        translators: tuple[type["Translator"]] | None = None,
+        logger: Logger | None = None,
+    ) -> None:
         self.app = app
         self.rule = rule
         self.logger = ClickLogger() if logger is None else logger
-        self.translators = self._load_default_translators() if translators is None else translators
+        self.translators = (
+            self._load_default_translators() if translators is None else translators
+        )
 
     @staticmethod
-    def _load_default_translators() -> tuple[typing.Type["Translator"]]:
-        from .type_translators import BaseTranslator, FlaskTranslator
+    def _load_default_translators() -> tuple[type["Translator"]]:
+        from .type_translators import BaseTranslator, FlaskTranslator  # noqa: PLC0415
+
         return (BaseTranslator, FlaskTranslator)
 
     @property
     def rule_name(self) -> str:
         return self.rule.endpoint.replace(".", "_")
-    
+
     @property
     def rule_url(self) -> str:
-        return "".join([
-            (f"<{content}>" if arg else content) for arg, content in self.rule._trace
-        ][1:])
+        return "".join(
+            [(f"<{content}>" if arg else content) for arg, content in self.rule._trace][
+                1:
+            ]
+        )
 
     def parse_args_type(self) -> TSType | None:
         try:
             used_converters: dict[str, BaseConverter] = {
                 arg: converter
-                for arg, converter in 
-                ((arg, self.rule._converters.get(arg, None)) for arg in self.rule.arguments)
+                for arg, converter in (
+                    (arg, self.rule._converters.get(arg, None))
+                    for arg in self.rule.arguments
+                )
                 if converter is not None
             }
             types: list[tuple[str, TSType]] = [
@@ -88,23 +108,24 @@ class FlaskAnnotationsParser:
         except Exception as e:
             self.logger.error(f"couldn't parse argument types ({e})")
             return None
-        
+
     def translate_type(self, type_: Type) -> TSType:
         def translate(node: TypeNode, generics: dict[str, TSType]) -> TSType:
             for translator in translators:
                 r = translator.translate(node, generics)
                 if r is not None:
                     return r
-                
-            self.logger.warn(
-                f"can't translate '{getattr(node.origin, '__name__', node.origin)}' to a TypeScript equivalent, defaulting to 'any'"
+
+            self.logger.warning(
+                f"can't translate '{getattr(node.origin, '__name__', node.origin)}'"
+                " to a TypeScript equivalent, defaulting to 'any'",
             )
             return TSSimpleType("any")
-        
+
         translators = [Translator(translate) for Translator in self.translators]
         node = to_type_node(type_)
         return translate(node, {})
-    
+
     def parse_return_type(self) -> TSType | None:
         try:
             function = self.app.view_functions[self.rule.endpoint]
@@ -132,26 +153,32 @@ class FlaskAnnotationsParser:
         return tp
 
     def _get_converter_type(self, arg: str, converter: BaseConverter) -> TSType:
-        if isinstance(converter, FloatConverter) or isinstance(converter, IntegerConverter):
+        if isinstance(converter, (FloatConverter, IntegerConverter)):
             return TSSimpleType("number")
-        if isinstance(converter, UUIDConverter) or isinstance(converter, PathConverter) or isinstance(converter, UnicodeConverter):
+        if isinstance(converter, (UUIDConverter, PathConverter, UnicodeConverter)):
             return TSSimpleType("string")
 
         # Custom converter, check to_python() annotations
         annotations = get_type_hints(converter.to_python)
         if annotations is None or "return" not in annotations:
-            self.logger.warn(
+            self.logger.warning(
                 f"route '{self.rule.endpoint}', argument '{arg}': using non-standard"
                 "converter without type annotations, defaulting to 'string'",
             )
             return TSSimpleType("string")
-        
+
         return_annotations = annotations["return"]
         return self.translate_type(return_annotations)
 
 
 class CodeWriter:
-    def __init__(self, types_file: io.TextIOBase, api_file: io.TextIOBase, endpoint: str = "", stop_on_error: bool = False) -> None:
+    def __init__(
+        self,
+        types_file: io.TextIOBase,
+        api_file: io.TextIOBase,
+        endpoint: str = "",
+        stop_on_error: bool = False,
+    ) -> None:
         self.types_file = types_file
         self.api_file = api_file
         self.endpoint = endpoint
@@ -171,9 +198,9 @@ class CodeWriter:
             self._write_api_function(parser.rule_name, parser.rule_url, args_type)
             self._write_types(parser.rule_name, return_type, args_type)
         return not error
-    
+
     def _write_api_header(self) -> None:
-        self.api_file.write("import * as types from \"./types\";\n\n")
+        self.api_file.write('import * as types from "./types";\n\n')
         self.api_file.write(f'const BASE_ENDPOINT = "{self.endpoint}";\n\n')
         self.api_file.write(
             "function join(urlPart1: string, urlPart2: string) {\n"
@@ -182,11 +209,11 @@ class CodeWriter:
             '        url += "/";\n'
             "    }\n"
             '    else if (url.endsWith("/") && urlPart2.startsWith("/")) {\n'
-            '        url = url.substring(0, -1);\n'
+            "        url = url.substring(0, -1);\n"
             "    }\n"
             "    url += urlPart2;\n"
             "    return url;\n"
-            "}\n\n"
+            "}\n\n",
         )
 
         self.api_file.write(
@@ -195,35 +222,49 @@ class CodeWriter:
             "    if (!req.ok) throw Error(`Request failed with code ${req.status}.`);\n"
             "    const json = await req.json();\n"
             "    return json;\n"
-            "}\n\n"
+            "}\n\n",
         )
 
         self.api_file.write(
-            '// eslint-disable-next-line @typescript-eslint/no-explicit-any\n'
-            'export function buildUrl(rule: string, params: Record<string, any>) {\n'
-            '    return rule.replace(/<([a-zA-Z_]+[a-zA-Z_0-9]*)>/, (_, key) => {\n'
-            '        return String(params[key]);\n'
-            '    });\n'
-            '}\n\n'
+            "// eslint-disable-next-line @typescript-eslint/no-explicit-any\n"
+            "export function buildUrl(rule: string, params: Record<string, any>) {\n"
+            "    return rule.replace(/<([a-zA-Z_]+[a-zA-Z_0-9]*)>/, (_, key) => {\n"
+            "        return String(params[key]);\n"
+            "    });\n"
+            "}\n\n",
         )
 
-    def _write_api_function(self, rule_name: str, rule_url: str, args_type: TSType) -> None:
-        params = f"params: types.{rule_name}_ArgsType" if args_type != "undefined" else ""
+    def _write_api_function(
+        self, rule_name: str, rule_url: str, args_type: TSType
+    ) -> None:
+        params = (
+            f"params: types.{rule_name}_ArgsType" if args_type != "undefined" else ""
+        )
         url_for_params = "params" if args_type != "undefined" else ""
-        build_url = f'buildUrl("{rule_url}", params)' if args_type != "undefined" else f'"{rule_url}"'
+        build_url = (
+            f'buildUrl("{rule_url}", params)'
+            if args_type != "undefined"
+            else f'"{rule_url}"'
+        )
         self.api_file.write(
             f"export function urlFor_{rule_name}({params}): string {{\n"
-            f'    const endpoint = {build_url};\n'
+            f"    const endpoint = {build_url};\n"
             "    return endpoint;\n"
-            "}\n\n"
+            "}\n\n",
         )
         self.api_file.write(
-            f"export async function request_{rule_name}({params}): Promise<types.{rule_name}_ReturnType> {{\n"
+            f"export async function request_{rule_name}({params}): Promise<types.{rule_name}_ReturnType> {{\n"  # noqa: E501
             f"    const endpoint = urlFor_{rule_name}({url_for_params});\n"
             f"    return await request(endpoint);\n"
-            "}\n\n"
+            "}\n\n",
         )
 
-    def _write_types(self, rule_name: str, return_type: TSType, args_type: TSType) -> None:
-        self.types_file.write(f"export type {rule_name}_ReturnType = {return_type.generate()};\n")
-        self.types_file.write(f"export type {rule_name}_ArgsType = {args_type.generate()};\n\n")
+    def _write_types(
+        self, rule_name: str, return_type: TSType, args_type: TSType
+    ) -> None:
+        self.types_file.write(
+            f"export type {rule_name}_ReturnType = {return_type.generate()};\n"
+        )
+        self.types_file.write(
+            f"export type {rule_name}_ArgsType = {args_type.generate()};\n\n"
+        )

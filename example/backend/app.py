@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append("../..")
 
 import typing
@@ -13,7 +14,7 @@ from ts_flask_urls.stubs import Response, jsonify
 
 class CustomConverter(BaseConverter):
     regex = r"(true)|(false)"
-    
+
     def to_python(self, value: str) -> bool:
         return value == "true"
 
@@ -25,6 +26,7 @@ class APIResult[T, Y](typing.TypedDict):
     result: tuple[T, Y]
     x: typing.NotRequired[int]
     y: typing.NotRequired[bool]
+
 
 type InnerAlias[A, B, C] = tuple[A, B, C]
 type Sandwich[T, K] = InnerAlias[T, K, T]
@@ -41,22 +43,25 @@ app.url_map.converters["boolean"] = CustomConverter
 
 
 @app.route("/main")
-def main() -> APIResult[IntOrString, typing.Optional[bool]]:
+def main() -> APIResult[IntOrString, bool | None]:
     return {
-        "result": (1, True)
+        "result": (1, True),
     }
 
+
 @app.route("/complex")
-def complex() -> dict[str, tuple[IntOrString, ...]]:
+def complex_() -> dict[str, tuple[IntOrString, ...]]:
     return {
         "entry1": (1, "a", 2),
         "entry2": ("x", "y"),
     }
 
+
 @app.route("/with/<boolean:arg>/args")
 def with_args(arg: bool) -> Response[tuple[Sandwich[bool, str], int]]:
     value: Sandwich[bool, str] = (arg, str(arg), arg)
     return jsonify((value, 200))
+
 
 @app.route("/pytest")
 def pytest() -> Response[AliasedArgs[int, bool]]:

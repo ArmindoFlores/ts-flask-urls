@@ -1,17 +1,22 @@
 __all__ = [
-    "TSType",
-    "TSSimpleType",
-    "TSRecord",
-    "TSObject",
     "TSArray",
-    "TSUnion",
+    "TSObject",
+    "TSRecord",
+    "TSSimpleType",
     "TSTuple",
+    "TSType",
+    "TSUnion",
     "is_signal",
 ]
 
 from abc import ABC, abstractmethod
 from functools import cache
-from typing import Sequence
+from collections.abc import Sequence
+
+
+@cache
+def generate(type_: "TSType"):
+    return str(type_)
 
 
 class TSType(ABC):
@@ -35,9 +40,8 @@ class TSType(ABC):
     def _generate(self) -> str:
         raise NotImplementedError
 
-    @cache
     def generate(self) -> str:
-        return str(self)
+        return generate(self)
 
 
 class TSSimpleType(TSType):
@@ -60,7 +64,12 @@ class TSRecord(TSType):
 
 
 class TSObject(TSType):
-    def __init__(self, keys: Sequence[str], value_types: Sequence[TSType], required: Sequence[bool] | None = None):
+    def __init__(
+        self,
+        keys: Sequence[str],
+        value_types: Sequence[TSType],
+        required: Sequence[bool] | None = None,
+    ):
         self.keys: Sequence[str] = keys
         self.value_types: Sequence[TSType] = value_types
         self.required: Sequence[bool] = required or [True for _ in self.keys]
@@ -68,8 +77,13 @@ class TSObject(TSType):
     def _generate(self) -> str:
         string = ""
         first = True
-        for key, value_type, required in zip(self.keys, self.value_types, self.required):
-            string += f"{'' if first else ' '}{key}{'' if required else '?'}: {value_type.generate()};"
+        for key, value_type, required in zip(
+            self.keys, self.value_types, self.required, strict=True
+        ):
+            string += (
+                f"{'' if first else ' '}{key}{'' if required else '?'}: "
+                f"{value_type.generate()};"
+            )
             first = False
         return f"{{{string}}}"
 

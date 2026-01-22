@@ -18,20 +18,21 @@ def test_simple_typed_dict(app: Flask, return_parser: ParserFixture) -> None:
         return {
             "dictfield": {
                 "hello": 1.3,
-                "world": -0.5
+                "world": -0.5,
             },
             "flag": False,
-            "items": ("1", 2)
+            "items": ("1", 2),
         }
-    
+
     assert return_parser(app, "main") == TSObject(
         keys=("dictfield", "flag", "items"),
         value_types=(
             TSRecord(TSSimpleType("string"), TSSimpleType("number")),
             TSSimpleType("boolean"),
-            TSTuple((TSSimpleType("string"), TSSimpleType("number")))
-        )
+            TSTuple((TSSimpleType("string"), TSSimpleType("number"))),
+        ),
     )
+
 
 def test_generic_typed_dict(app: Flask, return_parser: ParserFixture) -> None:
     class GenericTypedDict[X, Y](TypedDict):
@@ -44,17 +45,17 @@ def test_generic_typed_dict(app: Flask, return_parser: ParserFixture) -> None:
         return {
             "dictfield": {
                 "hello": 1.3,
-                "world": -0.5
+                "world": -0.5,
             },
             "flag": False,
-            "items": (2.0, "str")
+            "items": (2.0, "str"),
         }
-    
+
     assert return_parser(app, "main") == TSObject(
         keys=("dictfield", "flag", "items"),
         value_types=(
             TSRecord(TSSimpleType("string"), TSSimpleType("number")),
             TSSimpleType("boolean"),
-            TSTuple((TSSimpleType("number"), TSSimpleType("string")))
-        )
+            TSTuple((TSSimpleType("number"), TSSimpleType("string"))),
+        ),
     )

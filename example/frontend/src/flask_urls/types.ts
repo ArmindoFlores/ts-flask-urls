@@ -12,4 +12,3 @@ export type with_args_ArgsType = {arg: boolean;};
 
 export type pytest_ReturnType = Record<string, [boolean[], number[]]>;
 export type pytest_ArgsType = undefined;
-

@@ -9,7 +9,7 @@ class TypeNode:
     args: tuple["TypeNode", ...]
     hints: dict[str, "TypeNode"]
     value: "TypeNode | None"
-    
+
     def __repr__(self) -> str:
         s = f"<TypeNode {getattr(self.origin, '__name__', self.origin)}"
         if len(self.params):
@@ -27,8 +27,11 @@ def to_type_node(type_: typing.Any) -> TypeNode:
     origin = typing.get_origin(type_) or type_
     return TypeNode(
         origin=origin,
-        params=getattr(origin, "__type_params__", tuple()),
+        params=getattr(origin, "__type_params__", ()),
         args=tuple(to_type_node(arg) for arg in typing.get_args(type_)),
-        hints={key: to_type_node(hint) for key, hint in getattr(origin, "__annotations__", {}).items()},
-        value=to_type_node(origin.__value__) if hasattr(origin, "__value__") else None
+        hints={
+            key: to_type_node(hint)
+            for key, hint in getattr(origin, "__annotations__", {}).items()
+        },
+        value=to_type_node(origin.__value__) if hasattr(origin, "__value__") else None,
     )

@@ -10,21 +10,21 @@ The main goal is to reduce duplication and type mismatches between backend and f
 
 Some features are already implemented, others are planned.
 
-- [x] Parse Flask routes and URL rules  
-- [x] Parse route argument types from annotations  
-- [x] Parse return types from annotated view functions  
-- [x] Generate TypeScript type definitions  
-- [x] Generate TypeScript request/helper functions for endpoints  
-- [x] CLI integration with Flask via a custom command  
-- [x] Handling of Flask converters (custom and built-in)  
-- [ ] Support for multiple HTTP methods (GET, POST, PUT, DELETE, etc.)  
-- [ ] Support for JSON request bodies with typed parameters  
+- [x] Parse Flask routes and URL rules
+- [x] Parse route argument types from annotations
+- [x] Parse return types from annotated view functions
+- [x] Generate TypeScript type definitions
+- [x] Generate TypeScript request/helper functions for endpoints
+- [x] CLI integration with Flask via a custom command
+- [x] Handling of Flask converters (custom and built-in)
+- [ ] Support for multiple HTTP methods (GET, POST, PUT, DELETE, etc.)
+- [ ] Support for JSON request bodies with typed parameters
 - [ ] Support for `typing.Annotated` to:
-    - [ ] Ignore specific routes  
-    - [ ] Customize generation behavior (naming, visibility, etc.)  
-- [ ] Improved error reporting for unsupported or ambiguous annotations  
-- [ ] Optional generation modes (types only, requests only)  
-- [ ] Configuration file support  
+    - [ ] Ignore specific routes
+    - [ ] Customize generation behavior (naming, visibility, etc.)
+- [ ] Improved error reporting for unsupported or ambiguous annotations
+- [ ] Optional generation modes (types only, requests only)
+- [ ] Configuration file support
 - [ ] Handle recursive types (such as `type RecursiveType = tuple[int, RecursiveType]`)
 - [x] Support returning with `jsonify(...)`
 - [x] Support extensions via translators

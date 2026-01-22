@@ -77,4 +77,3 @@ export async function request_pytest(): Promise<types.pytest_ReturnType> {
     const endpoint = urlFor_pytest();
     return await request(endpoint);
 }
-
