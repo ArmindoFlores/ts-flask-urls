@@ -1,7 +1,7 @@
 import io
+import pathlib
 import typing
 
-import click
 from flask import Flask
 from werkzeug.routing import (
     FloatConverter,
@@ -13,6 +13,9 @@ from werkzeug.routing import (
 )
 from werkzeug.routing.rules import Rule
 
+from ts_flask_urls.logger import Logger, ClickLogger
+
+from .inference.base_inferrer import BaseInferrer
 from .ts_types import TSType, TSSimpleType, TSObject
 from .type_translators import TypeNode, to_type_node
 
@@ -27,28 +30,14 @@ type TypeTree = Type | tuple[Type, TypeTreeTuple | TypeTreeDict]
 type GenericParamValues = dict[typing.TypeVar, TypeTree]
 
 
-class Logger(typing.Protocol):
-    def info(self, text: str) -> None: ...
-    def warning(self, text: str) -> None: ...
-    def error(self, text: str) -> None: ...
-
-
-class ClickLogger:
-    @staticmethod
-    def info(text: str) -> None:
-        click.echo(f"Info: {text}")
-
-    @staticmethod
-    def warning(text: str) -> None:
-        click.secho(f"Warning: {text}", fg="yellow")
-
-    @staticmethod
-    def error(text: str) -> None:
-        click.secho(f"Error: {text}", fg="red")
-
-
 def get_type_hints(tp: typing.Any) -> dict[str, typing.Any]:
     return getattr(tp, "__annotations__", {})
+
+
+def is_subpath(child: str, parent: str) -> bool:
+    child_path = pathlib.Path(child).resolve()
+    parent_path = pathlib.Path(parent).resolve()
+    return parent_path in child_path.parents
 
 
 class FlaskAnnotationsParser:
@@ -56,12 +45,16 @@ class FlaskAnnotationsParser:
         self,
         app: Flask,
         rule: Rule,
+        inferrer: BaseInferrer | None = None,
+        inference_mode: str = "never",
         translators: tuple[type["Translator"]] | None = None,
         logger: Logger | None = None,
     ) -> None:
         self.app = app
         self.rule = rule
         self.logger = ClickLogger() if logger is None else logger
+        self.inferrer = inferrer
+        self.inference_mode = inference_mode
         self.translators = (
             self._load_default_translators() if translators is None else translators
         )
@@ -126,13 +119,33 @@ class FlaskAnnotationsParser:
         node = to_type_node(type_)
         return translate(node, {})
 
+    def should_infer_types(self, function: typing.Callable) -> bool:
+        if self.inference_mode == "never" or self.inferrer is None:
+            return False
+        if is_subpath(function.__code__.co_filename, self.inferrer.base_path):
+            return False
+        annotations = get_type_hints(function)
+        return (
+            self.inference_mode == "always"
+            or annotations is None
+            or "return" not in annotations
+        )
+
     def parse_return_type(self) -> TSType | None:
         try:
             function = self.app.view_functions[self.rule.endpoint]
+            route_function_name = function.__name__
+            route_function_file = function.__code__.co_filename
+            if self.should_infer_types(function):
+                subpath = route_function_file.removeprefix(self.inferrer.base_path)
+                subpath = subpath.removeprefix("/")
+                subpath = subpath.removesuffix(".py")
+                inferred_type = self.inferrer.infer(subpath, route_function_name)
+                function.__annotations__["return"] = inferred_type
             annotations = get_type_hints(function)
 
             if annotations is None or "return" not in annotations:
-                return TSSimpleType("undefined")
+                return TSSimpleType("any")
 
             return_annotations = annotations["return"]
             route_return_annotations = self._get_route_annotations(return_annotations)
