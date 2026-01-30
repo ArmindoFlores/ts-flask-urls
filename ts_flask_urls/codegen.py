@@ -67,7 +67,7 @@ class FlaskAnnotationsParser:
         )
 
     @staticmethod
-    def _load_default_translators() -> tuple[type["Translator"]]:
+    def _load_default_translators() -> tuple[type["Translator"], ...]:
         from .type_translators import BaseTranslator, FlaskTranslator  # noqa: PLC0415
 
         return (BaseTranslator, FlaskTranslator)
@@ -110,7 +110,10 @@ class FlaskAnnotationsParser:
             return None
 
     def translate_type(self, type_: Type) -> TSType:
-        def translate(node: TypeNode, generics: dict[str, TSType]) -> TSType:
+        def translate(
+            node: TypeNode,
+            generics: dict[typing.TypeVar, TSType] | None
+        ) -> TSType:
             for translator in translators:
                 r = translator.translate(node, generics)
                 if r is not None:

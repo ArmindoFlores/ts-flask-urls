@@ -16,7 +16,7 @@ class FlaskTranslator(Translator):
         self._translate = translate
 
     def translate(
-        self, node: TypeNode, generics: dict[typing.TypeVar, TSType]
+        self, node: TypeNode, generics: dict[typing.TypeVar, TSType] | None
     ) -> TSType | None:
         if node.origin is Response:
             if len(node.args) != 1:

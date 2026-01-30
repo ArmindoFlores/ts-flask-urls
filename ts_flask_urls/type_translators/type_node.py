@@ -13,7 +13,7 @@ RecursiveCall = RecursiveCallClass()
 @dataclasses.dataclass(frozen=True)
 class TypeNode:
     origin: typing.Any
-    params: tuple[typing.TypeVar]
+    params: tuple[typing.TypeVar, ...]
     args: tuple["TypeNode", ...]
     hints: dict[str, "TypeNode"]
     value: "TypeNode | None"
@@ -32,7 +32,7 @@ class TypeNode:
 
 
 def to_type_node(
-    type_: typing.Any, original_type: TypeNode = None, mapping=None
+    type_: typing.Any, original_type: TypeNode | None = None, mapping=None
 ) -> TypeNode:
     mapping = {} if mapping is None else mapping
     origin = typing.get_origin(type_) or type_

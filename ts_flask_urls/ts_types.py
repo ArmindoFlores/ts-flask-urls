@@ -48,7 +48,7 @@ class TSSimpleType(TSType):
     def __init__(self, type_: str):
         self.type_ = type_
 
-    def _generate(self, _: str | None = None) -> str:
+    def _generate(self, type_name: str | None = None) -> str:
         if self.type_ == "...":
             return "never"
         return self.type_
