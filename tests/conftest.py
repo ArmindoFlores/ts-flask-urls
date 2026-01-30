@@ -4,7 +4,7 @@ import flask
 import pytest
 
 from ts_flask_urls.ts_types import TSType
-from ts_flask_urls.codegen import FlaskAnnotationsParser
+from ts_flask_urls.codegen.extractor import FlaskRouteTypeExtractor
 
 
 @pytest.fixture
@@ -22,7 +22,7 @@ def args_parser():
         rules = app.url_map.iter_rules()
         for rule in rules:
             if rule.endpoint == endpoint:
-                return FlaskAnnotationsParser(app, rule).parse_args_type()
+                return FlaskRouteTypeExtractor(app, rule).parse_args_type()
         return None
 
     return inner
@@ -34,7 +34,7 @@ def return_parser():
         rules = app.url_map.iter_rules()
         for rule in rules:
             if rule.endpoint == endpoint:
-                return FlaskAnnotationsParser(app, rule).parse_return_type()
+                return FlaskRouteTypeExtractor(app, rule).parse_return_type()
         return None
 
     return inner

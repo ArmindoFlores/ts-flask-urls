@@ -5,7 +5,7 @@ from flask import current_app
 from flask.cli import AppGroup
 from werkzeug.routing.rules import Rule
 
-from .codegen import FlaskAnnotationsParser, CodeWriter
+from .codegen import CodeWriter, FlaskRouteTypeExtractor
 
 
 cli = AppGroup("ts-flask-urls")
@@ -25,7 +25,7 @@ def map_urls(out_dir: str, endpoint: str):
     ):
         code_writer = CodeWriter(types_f, api_f, endpoint)
         result = code_writer.write(
-            FlaskAnnotationsParser(current_app, rule) for rule in rules
+            FlaskRouteTypeExtractor(current_app, rule) for rule in rules
         )
         if not result:
             click.secho("Errors occurred during file generation", fg="red")

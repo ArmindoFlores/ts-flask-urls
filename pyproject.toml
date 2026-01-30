@@ -13,6 +13,13 @@ authors = [
   {name = "Francisco Rodrigues", email = "francisco.rodrigues0908@gmail.com"},
 ]
 
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["ts_flask_urls"]
+
 [dependency-groups]
 dev = [
     "ty>=0.0.11",

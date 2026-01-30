@@ -1,12 +1,12 @@
 __all__ = [
     "cli",
-    "codegen",
+    "extractor",
     "stubs",
     "ts_types",
     "type_translators",
 ]
 
-from . import codegen
+from .codegen import extractor
 from . import type_translators
 from . import stubs
 from . import ts_types
