@@ -8,7 +8,7 @@ export default function App() {
     const [endpointReturnValue, setEndpointReturnValue] = useState<WithArgsReturnType>();
 
     const requestEndpoint = () => {
-        API.requestWithArgs({
+        API.getWithArgs({
             arg: true
         }).then(result => {
             setEndpointReturnValue(result);
