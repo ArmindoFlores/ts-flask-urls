@@ -18,7 +18,8 @@ Some features are already implemented, others are planned.
 - [x] CLI integration with Flask via a custom command
 - [x] Handling of Flask converters (custom and built-in)
 - [x] Support for multiple HTTP methods (GET, POST, PUT, DELETE, etc.)
-- [ ] Support for JSON request bodies with typed parameters
+- [x] Support for JSON request bodies with typed parameters
+    - [ ] Support validators such as pydantic
 - [ ] Support for `typing.Annotated` to:
     - [ ] Ignore specific routes
     - [ ] Customize generation behavior (naming, visibility, etc.)

@@ -7,106 +7,151 @@ export function buildUrl(rule: string, params: Record<string, any>) {
     });
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type RequestFunction = (endpoint: string, method: string) => Promise<any>;
-
-export function makeAPI(requestFn: RequestFunction) {
+export function makeAPI(requestFn: types.RequestFunction) {
     async function headStatic(params: types.StaticArgsType): Promise<types.StaticReturnType> {
-        const endpoint = buildUrl("/static/<filename>", params);
-        return await requestFn(endpoint, "HEAD");
-    }
-
-    async function optionsStatic(params: types.StaticArgsType): Promise<types.StaticReturnType> {
-        const endpoint = buildUrl("/static/<filename>", params);
-        return await requestFn(endpoint, "OPTIONS");
+        const endpoint = buildUrl("/static/<filename>", params.args);
+        return await requestFn(
+            endpoint,
+            {method: "HEAD", ...params}
+        );
     }
 
     async function getStatic(params: types.StaticArgsType): Promise<types.StaticReturnType> {
-        const endpoint = buildUrl("/static/<filename>", params);
-        return await requestFn(endpoint, "GET");
+        const endpoint = buildUrl("/static/<filename>", params.args);
+        return await requestFn(
+            endpoint,
+            {method: "GET", ...params}
+        );
     }
 
-    async function headMain(): Promise<types.MainReturnType> {
+    async function optionsStatic(params: types.StaticArgsType): Promise<types.StaticReturnType> {
+        const endpoint = buildUrl("/static/<filename>", params.args);
+        return await requestFn(
+            endpoint,
+            {method: "OPTIONS", ...params}
+        );
+    }
+
+    async function headMain(params: types.MainArgsType): Promise<types.MainReturnType> {
         const endpoint = "/main";
-        return await requestFn(endpoint, "HEAD");
+        return await requestFn(
+            endpoint,
+            {method: "HEAD", ...params}
+        );
     }
 
-    async function optionsMain(): Promise<types.MainReturnType> {
+    async function postMain(params: types.MainArgsType): Promise<types.MainReturnType> {
         const endpoint = "/main";
-        return await requestFn(endpoint, "OPTIONS");
+        return await requestFn(
+            endpoint,
+            {method: "POST", ...params}
+        );
     }
 
-    async function postMain(): Promise<types.MainReturnType> {
+    async function getMain(params: types.MainArgsType): Promise<types.MainReturnType> {
         const endpoint = "/main";
-        return await requestFn(endpoint, "POST");
+        return await requestFn(
+            endpoint,
+            {method: "GET", ...params}
+        );
     }
 
-    async function getMain(): Promise<types.MainReturnType> {
+    async function optionsMain(params: types.MainArgsType): Promise<types.MainReturnType> {
         const endpoint = "/main";
-        return await requestFn(endpoint, "GET");
+        return await requestFn(
+            endpoint,
+            {method: "OPTIONS", ...params}
+        );
     }
 
-    async function headComplex_(): Promise<types.Complex_ReturnType> {
+    async function headComplex_(params: types.Complex_ArgsType): Promise<types.Complex_ReturnType> {
         const endpoint = "/complex";
-        return await requestFn(endpoint, "HEAD");
+        return await requestFn(
+            endpoint,
+            {method: "HEAD", ...params}
+        );
     }
 
-    async function optionsComplex_(): Promise<types.Complex_ReturnType> {
+    async function getComplex_(params: types.Complex_ArgsType): Promise<types.Complex_ReturnType> {
         const endpoint = "/complex";
-        return await requestFn(endpoint, "OPTIONS");
+        return await requestFn(
+            endpoint,
+            {method: "GET", ...params}
+        );
     }
 
-    async function getComplex_(): Promise<types.Complex_ReturnType> {
+    async function optionsComplex_(params: types.Complex_ArgsType): Promise<types.Complex_ReturnType> {
         const endpoint = "/complex";
-        return await requestFn(endpoint, "GET");
+        return await requestFn(
+            endpoint,
+            {method: "OPTIONS", ...params}
+        );
     }
 
     async function headWithArgs(params: types.WithArgsArgsType): Promise<types.WithArgsReturnType> {
-        const endpoint = buildUrl("/with/<arg>/args", params);
-        return await requestFn(endpoint, "HEAD");
-    }
-
-    async function optionsWithArgs(params: types.WithArgsArgsType): Promise<types.WithArgsReturnType> {
-        const endpoint = buildUrl("/with/<arg>/args", params);
-        return await requestFn(endpoint, "OPTIONS");
+        const endpoint = buildUrl("/with/<arg>/args", params.args);
+        return await requestFn(
+            endpoint,
+            {method: "HEAD", ...params}
+        );
     }
 
     async function getWithArgs(params: types.WithArgsArgsType): Promise<types.WithArgsReturnType> {
-        const endpoint = buildUrl("/with/<arg>/args", params);
-        return await requestFn(endpoint, "GET");
+        const endpoint = buildUrl("/with/<arg>/args", params.args);
+        return await requestFn(
+            endpoint,
+            {method: "GET", ...params}
+        );
     }
 
-    async function headPytest(): Promise<types.PytestReturnType> {
-        const endpoint = "/pytest";
-        return await requestFn(endpoint, "HEAD");
+    async function optionsWithArgs(params: types.WithArgsArgsType): Promise<types.WithArgsReturnType> {
+        const endpoint = buildUrl("/with/<arg>/args", params.args);
+        return await requestFn(
+            endpoint,
+            {method: "OPTIONS", ...params}
+        );
     }
 
-    async function optionsPytest(): Promise<types.PytestReturnType> {
+    async function headPytest(params: types.PytestArgsType): Promise<types.PytestReturnType> {
         const endpoint = "/pytest";
-        return await requestFn(endpoint, "OPTIONS");
+        return await requestFn(
+            endpoint,
+            {method: "HEAD", ...params}
+        );
     }
 
-    async function getPytest(): Promise<types.PytestReturnType> {
+    async function getPytest(params: types.PytestArgsType): Promise<types.PytestReturnType> {
         const endpoint = "/pytest";
-        return await requestFn(endpoint, "GET");
+        return await requestFn(
+            endpoint,
+            {method: "GET", ...params}
+        );
+    }
+
+    async function optionsPytest(params: types.PytestArgsType): Promise<types.PytestReturnType> {
+        const endpoint = "/pytest";
+        return await requestFn(
+            endpoint,
+            {method: "OPTIONS", ...params}
+        );
     }
 
     return {
         headStatic,
-        optionsStatic,
         getStatic,
+        optionsStatic,
         headMain,
-        optionsMain,
         postMain,
         getMain,
+        optionsMain,
         headComplex_,
-        optionsComplex_,
         getComplex_,
+        optionsComplex_,
         headWithArgs,
-        optionsWithArgs,
         getWithArgs,
+        optionsWithArgs,
         headPytest,
-        optionsPytest,
         getPytest,
+        optionsPytest,
     };
 }

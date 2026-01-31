@@ -9,7 +9,7 @@ from flask_cors import CORS
 from werkzeug.routing import BaseConverter
 
 import ts_flask_urls
-from ts_flask_urls.stubs import Response, jsonify
+from ts_flask_urls.utils import Response, jsonify
 
 
 class CustomConverter(BaseConverter):
@@ -64,5 +64,6 @@ def with_args(arg: bool) -> Response[tuple[Sandwich[bool, str], int]]:
 
 
 @app.route("/pytest")
-def pytest() -> Response[AliasedArgs[int, bool]]:
-    return jsonify({})
+@ts_flask_urls.utils.json_kwarg
+def pytest(json: int) -> Response[AliasedArgs[int, bool]]:
+    return jsonify({"hello": ([], [json])})

@@ -9,7 +9,8 @@ export default function App() {
 
     const requestEndpoint = () => {
         API.getWithArgs({
-            arg: true
+            args: { arg: true },
+            headers: { "X-Header": "test" }
         }).then(result => {
             setEndpointReturnValue(result);
         });

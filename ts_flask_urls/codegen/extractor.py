@@ -141,7 +141,33 @@ class FlaskRouteTypeExtractor:
             return self.translate_type(route_return_annotations)
 
         except Exception as e:
-            self.logger.error(f"couldn't parse return type ({e})")
+            self.logger.error(
+                f"couldn't parse return type of '{self.rule.endpoint}' ({e})"
+            )
+            return None
+
+    def parse_json_body(self) -> TSType | None:
+        try:
+            function = self.app.view_functions[self.rule.endpoint]
+            json_key = getattr(function, "_ts_flask_urls", None)
+            if json_key is None:
+                return None
+
+            annotations = get_type_hints(function)
+            if json_key not in annotations:
+                self.logger.error(
+                    f"'{self.rule.endpoint}' expected to receive JSON body as keyword "
+                    f"argument '{json_key}'"
+                )
+                return None
+
+            json_body_annotations = annotations[json_key]
+            return self.translate_type(json_body_annotations)
+
+        except Exception as e:
+            self.logger.error(
+                f"couldn't parse JSON body type of '{self.rule.endpoint}' ({e})"
+            )
             return None
 
     def _get_route_annotations_from_tuple(self, tp: typing.Any) -> Type:
