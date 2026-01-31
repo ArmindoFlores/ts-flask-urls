@@ -8,64 +8,105 @@ export function buildUrl(rule: string, params: Record<string, any>) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type RequestFunction = (endpoint: string) => Promise<any>;
+type RequestFunction = (endpoint: string, method: string) => Promise<any>;
 
 export function makeAPI(requestFn: RequestFunction) {
-    function urlFor_static(params: types.StaticArgsType): string {
+    async function headStatic(params: types.StaticArgsType): Promise<types.StaticReturnType> {
         const endpoint = buildUrl("/static/<filename>", params);
-         return endpoint;
+        return await requestFn(endpoint, "HEAD");
     }
 
-    async function requestStatic(params: types.StaticArgsType): Promise<types.StaticReturnType> {
-        const endpoint = urlFor_static(params);
-        return await requestFn(endpoint);
+    async function optionsStatic(params: types.StaticArgsType): Promise<types.StaticReturnType> {
+        const endpoint = buildUrl("/static/<filename>", params);
+        return await requestFn(endpoint, "OPTIONS");
     }
 
-    function urlFor_main(): string {
+    async function getStatic(params: types.StaticArgsType): Promise<types.StaticReturnType> {
+        const endpoint = buildUrl("/static/<filename>", params);
+        return await requestFn(endpoint, "GET");
+    }
+
+    async function headMain(): Promise<types.MainReturnType> {
         const endpoint = "/main";
-         return endpoint;
+        return await requestFn(endpoint, "HEAD");
     }
 
-    async function requestMain(): Promise<types.MainReturnType> {
-        const endpoint = urlFor_main();
-        return await requestFn(endpoint);
+    async function optionsMain(): Promise<types.MainReturnType> {
+        const endpoint = "/main";
+        return await requestFn(endpoint, "OPTIONS");
     }
 
-    function urlFor_complex_(): string {
+    async function postMain(): Promise<types.MainReturnType> {
+        const endpoint = "/main";
+        return await requestFn(endpoint, "POST");
+    }
+
+    async function getMain(): Promise<types.MainReturnType> {
+        const endpoint = "/main";
+        return await requestFn(endpoint, "GET");
+    }
+
+    async function headComplex_(): Promise<types.Complex_ReturnType> {
         const endpoint = "/complex";
-         return endpoint;
+        return await requestFn(endpoint, "HEAD");
     }
 
-    async function requestComplex_(): Promise<types.Complex_ReturnType> {
-        const endpoint = urlFor_complex_();
-        return await requestFn(endpoint);
+    async function optionsComplex_(): Promise<types.Complex_ReturnType> {
+        const endpoint = "/complex";
+        return await requestFn(endpoint, "OPTIONS");
     }
 
-    function urlFor_with_args(params: types.WithArgsArgsType): string {
+    async function getComplex_(): Promise<types.Complex_ReturnType> {
+        const endpoint = "/complex";
+        return await requestFn(endpoint, "GET");
+    }
+
+    async function headWithArgs(params: types.WithArgsArgsType): Promise<types.WithArgsReturnType> {
         const endpoint = buildUrl("/with/<arg>/args", params);
-         return endpoint;
+        return await requestFn(endpoint, "HEAD");
     }
 
-    async function requestWithArgs(params: types.WithArgsArgsType): Promise<types.WithArgsReturnType> {
-        const endpoint = urlFor_with_args(params);
-        return await requestFn(endpoint);
+    async function optionsWithArgs(params: types.WithArgsArgsType): Promise<types.WithArgsReturnType> {
+        const endpoint = buildUrl("/with/<arg>/args", params);
+        return await requestFn(endpoint, "OPTIONS");
     }
 
-    function urlFor_pytest(): string {
+    async function getWithArgs(params: types.WithArgsArgsType): Promise<types.WithArgsReturnType> {
+        const endpoint = buildUrl("/with/<arg>/args", params);
+        return await requestFn(endpoint, "GET");
+    }
+
+    async function headPytest(): Promise<types.PytestReturnType> {
         const endpoint = "/pytest";
-         return endpoint;
+        return await requestFn(endpoint, "HEAD");
     }
 
-    async function requestPytest(): Promise<types.PytestReturnType> {
-        const endpoint = urlFor_pytest();
-        return await requestFn(endpoint);
+    async function optionsPytest(): Promise<types.PytestReturnType> {
+        const endpoint = "/pytest";
+        return await requestFn(endpoint, "OPTIONS");
+    }
+
+    async function getPytest(): Promise<types.PytestReturnType> {
+        const endpoint = "/pytest";
+        return await requestFn(endpoint, "GET");
     }
 
     return {
-        requestStatic,
-        requestMain,
-        requestComplex_,
-        requestWithArgs,
-        requestPytest,
+        headStatic,
+        optionsStatic,
+        getStatic,
+        headMain,
+        optionsMain,
+        postMain,
+        getMain,
+        headComplex_,
+        optionsComplex_,
+        getComplex_,
+        headWithArgs,
+        optionsWithArgs,
+        getWithArgs,
+        headPytest,
+        optionsPytest,
+        getPytest,
     };
 }

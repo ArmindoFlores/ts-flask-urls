@@ -34,6 +34,8 @@ cli = AppGroup("ts-flask-urls")
         "{d} (default route name), "
         "{cc} (camelCase), "
         "{pc} (PascalCase), "
+        "{uc} (UPPERCASE), "
+        "{lc} (lowercase), "
         "{sc} (snake_case). "
         "Defaults to: '{pc}ReturnType'"
     ),
@@ -47,21 +49,25 @@ cli = AppGroup("ts-flask-urls")
         "{d} (default route name), "
         "{cc} (camelCase), "
         "{pc} (PascalCase), "
+        "{uc} (UPPERCASE), "
+        "{lc} (lowercase), "
         "{sc} (snake_case). "
         "Defaults to: '{pc}ArgsType'"
     ),
 )
 @click.option(
     "--function-name-format",
-    default="request{pc}",
+    default="{m_lc}{r_pc}",
     help=(
-        "Format string used to generate function names from the route name. "
+        "Format string used to generate function names from the route and HTTP method. "
         "Available placeholders are: "
-        "{d} (default route name), "
-        "{cc} (camelCase), "
-        "{pc} (PascalCase), "
-        "{sc} (snake_case). "
-        "Defaults to: 'request{pc}'"
+        "{r_d} or {m_d} (default route name or HTTP method), "
+        "{r_cc} or {m_cc} (camelCase), "
+        "{r_pc} or {m_pc} (PascalCase), "
+        "{r_uc} or {m_uc} (UPPERCASE), "
+        "{r_lc} or {m_lc} (lowercase), "
+        "{r_sc} or {m_sc} (snake_case). "
+        "Defaults to: '{m_lc}{r_pc}'"
     ),
 )
 def map_urls(

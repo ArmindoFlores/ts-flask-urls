@@ -17,7 +17,7 @@ Some features are already implemented, others are planned.
 - [x] Generate TypeScript request/helper functions for endpoints
 - [x] CLI integration with Flask via a custom command
 - [x] Handling of Flask converters (custom and built-in)
-- [ ] Support for multiple HTTP methods (GET, POST, PUT, DELETE, etc.)
+- [x] Support for multiple HTTP methods (GET, POST, PUT, DELETE, etc.)
 - [ ] Support for JSON request bodies with typed parameters
 - [ ] Support for `typing.Annotated` to:
     - [ ] Ignore specific routes

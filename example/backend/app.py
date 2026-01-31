@@ -42,7 +42,7 @@ app.cli.add_command(ts_flask_urls.cli)
 app.url_map.converters["boolean"] = CustomConverter
 
 
-@app.route("/main")
+@app.route("/main", methods=("GET", "POST"))
 def main() -> APIResult[IntOrString, bool | None]:
     return {
         "result": (1, True),

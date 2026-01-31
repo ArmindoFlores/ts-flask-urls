@@ -8,12 +8,14 @@ if typing.TYPE_CHECKING:
     from .extractor import FlaskRouteTypeExtractor
 
 
-def make_rule_name_map(rule_name: str) -> dict[str, str]:
+def make_rule_name_map(rule_name: str, prefix: str = "") -> dict[str, str]:
     return {
-        "pc": inflection.camelize(rule_name, True),
-        "cc": inflection.camelize(rule_name, False),
-        "sc": inflection.underscore(rule_name),
-        "d": rule_name,
+        prefix+"pc": inflection.camelize(rule_name, True),
+        prefix+"cc": inflection.camelize(rule_name, False),
+        prefix+"sc": inflection.underscore(rule_name),
+        prefix+"uc": rule_name.replace("_", "").upper(),
+        prefix+"lc": rule_name.replace("_", "").lower(),
+        prefix+"d": rule_name,
     }
 
 
@@ -38,10 +40,11 @@ class CodeWriter:
         self.endpoint = endpoint
         self.stop_on_error = stop_on_error
 
-    def _api_function_name(self, rule_name: str) -> str:
-        return self.function_name_format.format_map(
-            make_rule_name_map(rule_name)
-        )
+    def _api_function_name(self, rule_name: str, method: str) -> str:
+        return self.function_name_format.format_map({
+            **make_rule_name_map(rule_name, "r_"),
+            **make_rule_name_map(method, "m_")
+        })
 
     def _return_type_name(self, rule_name: str) -> str:
         return self.return_type_format.format_map(
@@ -56,7 +59,7 @@ class CodeWriter:
     def write(self, parsers: typing.Iterable["FlaskRouteTypeExtractor"]) -> bool:
         error = False
         self._write_api_header()
-        names = []
+        names: list[str] = []
         for parser in parsers:
             return_type = parser.parse_return_type()
             args_type = parser.parse_args_type()
@@ -68,14 +71,15 @@ class CodeWriter:
             return_type_name, args_type_name = self._write_types(
                 parser.rule_name, return_type, args_type
             )
-            names.append(
+            names.extend(
                 self._write_api_function(
                     parser.rule_name,
                     parser.rule_url,
+                    method,
                     args_type,
                     return_type_name,
                     args_type_name
-                )
+                ) for method in (parser.rule.methods or {})
             )
         self._write_api_footer(names)
         return not error
@@ -92,7 +96,8 @@ class CodeWriter:
         )
         self.api_file.write(
             "// eslint-disable-next-line @typescript-eslint/no-explicit-any\n"
-            "type RequestFunction = (endpoint: string) => Promise<any>;\n\n"
+            "type RequestFunction = (endpoint: string, method: string) => Promise<any>;"
+            "\n\n"
         )
         self.api_file.write(
             "export function makeAPI(requestFn: RequestFunction) {\n"
@@ -109,6 +114,7 @@ class CodeWriter:
         self,
         rule_name: str,
         rule_url: str,
+        method: str,
         args_type: "TSType",
         return_type_name: str,
         args_type_name: str
@@ -116,23 +122,16 @@ class CodeWriter:
         params = (
             f"params: types.{args_type_name}" if args_type != "undefined" else ""
         )
-        url_for_params = "params" if args_type != "undefined" else ""
         build_url = (
             f'buildUrl("{rule_url}", params)'
             if args_type != "undefined"
             else f'"{rule_url}"'
         )
-        f_name = self._api_function_name(rule_name)
-        self.api_file.write(
-            f"    function urlFor_{rule_name}({params}): string {{\n"
-            f"        const endpoint = {build_url};\n"
-            "         return endpoint;\n"
-            "    }\n\n",
-        )
+        f_name = self._api_function_name(rule_name, method)
         self.api_file.write(
             f"    async function {f_name}({params}): Promise<types.{return_type_name}> {{\n"  # noqa: E501
-            f"        const endpoint = urlFor_{rule_name}({url_for_params});\n"
-            f"        return await requestFn(endpoint);\n"
+            f"        const endpoint = {build_url};\n"
+            f'        return await requestFn(endpoint, "{method}");\n'
             "    }\n\n",
         )
         return f_name

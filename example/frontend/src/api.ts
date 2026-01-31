@@ -16,8 +16,8 @@ function join(s1: string, s2: string) {
     return path;
 }
 
-async function requestFn(endpoint: string) {
-    const req = await fetch(join(BASE_ENDPOINT, endpoint));
+async function requestFn(endpoint: string, method: string) {
+    const req = await fetch(join(BASE_ENDPOINT, endpoint), { method });
     return await req.json();
 }
 
