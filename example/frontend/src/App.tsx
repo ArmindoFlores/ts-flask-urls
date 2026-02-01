@@ -7,13 +7,12 @@ import { useState } from "react";
 export default function App() {
     const [endpointReturnValue, setEndpointReturnValue] = useState<WithArgsReturnType>();
 
-    const requestEndpoint = () => {
-        API.getWithArgs({
+    const requestEndpoint = async () => {
+        const result = await API.getWithArgs({
             args: { arg: true },
             headers: { "X-Header": "test" }
-        }).then(result => {
-            setEndpointReturnValue(result);
         });
+        setEndpointReturnValue(result);
     }
 
     return (

@@ -14,7 +14,7 @@ export type RequestFunction = (
 
 export type StaticReturnType = undefined;
 type _staticArgs = {filename: string;};
-type _staticBody = {filename: string;};
+type _staticBody = undefined;
 export interface StaticArgsType extends RequestArgs {
     args: _staticArgs;
     body?: _staticBody;
@@ -38,7 +38,7 @@ export interface Complex_ArgsType extends RequestArgs {
 
 export type WithArgsReturnType = [[boolean, string, boolean], number];
 type _with_argsArgs = {arg: boolean;};
-type _with_argsBody = {arg: boolean;};
+type _with_argsBody = undefined;
 export interface WithArgsArgsType extends RequestArgs {
     args: _with_argsArgs;
     body?: _with_argsBody;
@@ -46,7 +46,7 @@ export interface WithArgsArgsType extends RequestArgs {
 
 export type PytestReturnType = Record<string, [boolean[], number[]]>;
 type _pytestArgs = undefined;
-type _pytestBody = undefined;
+type _pytestBody = number;
 export interface PytestArgsType extends RequestArgs {
     args?: _pytestArgs;
     body: _pytestBody;

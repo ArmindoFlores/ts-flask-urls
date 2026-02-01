@@ -178,8 +178,12 @@ class CodeWriter:
         )
 
         internal_body_name = f"_{rule_name}Body"
+        string_json_body_type = (
+            "undefined" if json_body_type is None
+            else json_body_type.generate(internal_body_name)
+        )
         self.types_file.write(
-            f"type {internal_body_name} = {args_type.generate(internal_body_name)};\n"
+            f"type {internal_body_name} = {string_json_body_type};\n"
         )
 
         self.types_file.write(
