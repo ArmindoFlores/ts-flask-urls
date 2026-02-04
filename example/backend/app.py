@@ -8,8 +8,8 @@ import flask
 from flask_cors import CORS
 from werkzeug.routing import BaseConverter
 
-import ts_flask_urls
-from ts_flask_urls.utils import Response, jsonify
+import typesync
+from typesync.utils import Response, jsonify
 
 
 class CustomConverter(BaseConverter):
@@ -38,7 +38,7 @@ type AliasedArgs[A, B] = dict[str, tuple[Alias1[B], Alias2[A]]]
 
 app = flask.Flask(__name__)
 CORS(app, origins=["http://localhost:*", "http://127.0.0.1:*"])
-app.cli.add_command(ts_flask_urls.cli)
+app.cli.add_command(typesync.cli)
 app.url_map.converters["boolean"] = CustomConverter
 
 
@@ -64,6 +64,6 @@ def with_args(arg: bool) -> Response[tuple[Sandwich[bool, str], int]]:
 
 
 @app.route("/pytest")
-@ts_flask_urls.utils.json_kwarg
+@typesync.utils.json_kwarg
 def pytest(json: int) -> Response[AliasedArgs[int, bool]]:
     return jsonify({"hello": ([], [json])})

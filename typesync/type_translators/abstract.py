@@ -3,7 +3,7 @@ import typing
 
 if typing.TYPE_CHECKING:
     from . import TypeNode
-    from ts_flask_urls.ts_types import TSType
+    from typesync.ts_types import TSType
 
 
 class Translator(abc.ABC):

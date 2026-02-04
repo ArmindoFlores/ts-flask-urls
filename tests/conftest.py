@@ -3,8 +3,8 @@ import typing
 import flask
 import pytest
 
-from ts_flask_urls.ts_types import TSType
-from ts_flask_urls.codegen.extractor import FlaskRouteTypeExtractor
+from typesync.ts_types import TSType
+from typesync.codegen.extractor import FlaskRouteTypeExtractor
 
 
 @pytest.fixture

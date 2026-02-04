@@ -13,11 +13,11 @@ from werkzeug.routing import (
 from werkzeug.routing.rules import Rule
 
 from .inference import infer_return_type
-from ts_flask_urls.ts_types import TSType, TSSimpleType, TSObject
-from ts_flask_urls.type_translators import TypeNode, to_type_node
+from typesync.ts_types import TSType, TSSimpleType, TSObject
+from typesync.type_translators import TypeNode, to_type_node
 
 if typing.TYPE_CHECKING:
-    from ts_flask_urls.type_translators import Translator
+    from typesync.type_translators import Translator
 
 
 type Type = typing.Any
@@ -72,7 +72,7 @@ class FlaskRouteTypeExtractor:
 
     @staticmethod
     def _load_default_translators() -> tuple[type["Translator"], ...]:
-        from ts_flask_urls.type_translators import BaseTranslator, FlaskTranslator  # noqa: PLC0415
+        from typesync.type_translators import BaseTranslator, FlaskTranslator  # noqa: PLC0415
 
         return (BaseTranslator, FlaskTranslator)
 
@@ -174,7 +174,7 @@ class FlaskRouteTypeExtractor:
     def parse_json_body(self) -> TSType | None:
         try:
             function = self.app.view_functions[self.rule.endpoint]
-            json_key = getattr(function, "_ts_flask_urls", None)
+            json_key = getattr(function, "_typesync", None)
             if json_key is None:
                 return None
 

@@ -7,14 +7,14 @@ import flask
 
 class Response[T](flask.Response):
     """A typed `flask.Response`.
-    This exists to let `ts_flask_urls` know the response contains JSON shaped like T.
+    This exists to let `typesync` know the response contains JSON shaped like T.
     At runtime it behaves exactly like `flask.Response`.
     """
 
 
 def jsonify[T](data: T) -> Response[T]:
     """A typed wrapper around `flask.jsonify`.
-    Use this instead of `flask.jsonify` so that `ts_flask_urls`can track the shape
+    Use this instead of `flask.jsonify` so that `typesync`can track the shape
     of the JSON you're returning. It does not validate or transform `data`.
     """
     return typing.cast(Response[T], flask.jsonify(data))
@@ -22,12 +22,15 @@ def jsonify[T](data: T) -> Response[T]:
 
 def _json_kwarg_decorator[**P, R](func: Callable[P, R], key: str) -> Callable[P, R]:
     # Tag this route as accepting a JSON parameter
-    func._ts_flask_urls = key  # type: ignore[attr-defined]
+    func._typesync = key  # type: ignore[attr-defined]
+
     @functools.wraps(func)
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         kwargs[key] = flask.request.json
         return func(*args, **kwargs)
+
     return wrapper
+
 
 @typing.overload
 def json_kwarg[**P, R](func_or_key: Callable[P, R]) -> Callable[P, R]:
@@ -38,6 +41,8 @@ def json_kwarg[**P, R](func_or_key: Callable[P, R]) -> Callable[P, R]:
     view is called, `flask.request.json` is injected into the function call under
     the keyword name `"json"`.
     """
+
+
 @typing.overload
 def json_kwarg[**P, R](func_or_key: str) -> Callable[[Callable[P, R]], Callable[P, R]]:
     """Create a decorator that injects the request JSON under a custom keyword name.
@@ -47,12 +52,15 @@ def json_kwarg[**P, R](func_or_key: str) -> Callable[[Callable[P, R]], Callable[
     as a keyword argument with the given name.
     """
 
+
 def json_kwarg[**P, R](
-    func_or_key: Callable[P, R] | str
+    func_or_key: Callable[P, R] | str,
 ) -> Callable[P, R] | Callable[[Callable[P, R]], Callable[P, R]]:
     if isinstance(func_or_key, str):
+
         def wrapper(func: Callable[P, R]):
             return _json_kwarg_decorator(func, func_or_key)
+
         return wrapper
 
     return _json_kwarg_decorator(func_or_key, "json")

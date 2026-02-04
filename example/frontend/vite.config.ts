@@ -1,5 +1,5 @@
 import { defineConfig } from "vite";
-import tsFlaskUrlsPlugin from "rollup-plugin-ts-flask-urls";
+import typesyncPlugin from "rollup-plugin-typesync";
 import react from "@vitejs/plugin-react";
 
 
@@ -7,7 +7,7 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
     plugins: [
         react(),
-        tsFlaskUrlsPlugin({
+        typesyncPlugin({
             outDir: "src/flask_urls",
             backendRoot: "../backend"
         })

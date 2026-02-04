@@ -2,8 +2,8 @@ import typing
 
 from .abstract import Translator
 from .type_node import TypeNode
-from ts_flask_urls.ts_types import TSType
-from ts_flask_urls.utils import Response
+from typesync.ts_types import TSType
+from typesync.utils import Response
 
 
 class FlaskTranslator(Translator):

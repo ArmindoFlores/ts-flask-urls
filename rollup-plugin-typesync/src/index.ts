@@ -3,11 +3,9 @@ import { spawn, SpawnOptionsWithoutStdio } from "node:child_process";
 import path from "node:path";
 import fg from "fast-glob";
 
-export interface TsFlaskUrlsPluginOptions {
+export interface TypesyncPluginOptions {
     outDir: string;
     backendRoot: string;
-    cliCommand?: string;
-    watchBackend?: boolean;
 }
 
 async function aspawn(command: string, args: readonly string[] | undefined, options?: SpawnOptionsWithoutStdio | undefined): Promise<{status: number|null, output: string}> {
@@ -23,7 +21,7 @@ async function aspawn(command: string, args: readonly string[] | undefined, opti
     return { status, output };
 }
 
-async function runCodegen(this: PluginContext, options: TsFlaskUrlsPluginOptions) {
+async function runCodegen(this: PluginContext, options: TypesyncPluginOptions) {
     const {
         backendRoot,
         outDir,
@@ -32,8 +30,8 @@ async function runCodegen(this: PluginContext, options: TsFlaskUrlsPluginOptions
     const result = await aspawn(
         "flask",
         [
-            "ts-flask-urls",
-            "map-urls",
+            "typesync",
+            "generate",
             path.resolve(outDir),
         ],
         {
@@ -56,9 +54,9 @@ async function runCodegen(this: PluginContext, options: TsFlaskUrlsPluginOptions
     }
 }
 
-export default function tsFlaskUrlsPlugin(options: TsFlaskUrlsPluginOptions): Plugin {
+export default function TypesyncPlugin(options: TypesyncPluginOptions): Plugin {
     return {
-        name: "ts-flask-urls",
+        name: "typesync",
         async buildStart() {
             const files = await fg(path.join(options.backendRoot, "*"), {
                 dot: true,

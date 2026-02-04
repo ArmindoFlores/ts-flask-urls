@@ -8,7 +8,7 @@ from werkzeug.routing.rules import Rule
 from .codegen import CodeWriter, FlaskRouteTypeExtractor
 
 
-cli = AppGroup("ts-flask-urls")
+cli = AppGroup("typesync")
 
 
 @cli.command(help="Generate Typescript types based on Flask routes.")

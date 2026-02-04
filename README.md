@@ -1,6 +1,6 @@
-# TypeScript Flask URLs
+# Typesync
 
-This project aims to automatically generate TypeScript types and client-side request helpers directly from a Flask application. IT is heavily inspired by [JS Flask URLs](https://github.com/indico/js-flask-urls).
+This project aims to automatically generate TypeScript types and client-side request helpers directly from a Flask application. It is heavily inspired by [JS Flask URLs](https://github.com/indico/js-flask-urls).
 
 By inspecting Flask routes and their Python type annotations, it produces strongly typed TypeScript definitions and functions that can call those endpoints with correct argument and return types. The project is currently incomplete, but the core idea and basic functionality are already in place.
 
@@ -16,6 +16,7 @@ Some features are already implemented, others are planned.
 - [x] Generate TypeScript type definitions
 - [x] Generate TypeScript request/helper functions for endpoints
 - [x] CLI integration with Flask via a custom command
+- [x] Vite support
 - [x] Handling of Flask converters (custom and built-in)
 - [x] Support for multiple HTTP methods (GET, POST, PUT, DELETE, etc.)
 - [x] Support for JSON request bodies with typed parameters
@@ -33,6 +34,7 @@ Some features are already implemented, others are planned.
 
 \* Not all cases are supported.
 
+
 ## Installation
 
 The project is not yet published on PyPI. Installation is currently done directly from source, preferably using `uv`.
@@ -40,11 +42,33 @@ The project is not yet published on PyPI. Installation is currently done directl
 Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/ArmindoFlores/ts-flask-urls
-cd ts-flask-urls
+git clone https://github.com/ArmindoFlores/typesync
+cd typesync
 uv sync --dev
 uv pip install -e .
 ```
+
+## Usage
+### TypeScript generation
+The tool is exposed as a Flask CLI command. Inside your Flask application environment, run:
+
+```bash
+flask typesync generate OUT_DIR
+```
+
+This command will load the Flask app, inspect the URL map and registered view functions, and generate the corresponding TypeScript files (types and request helpers), placing them inside `OUT_DIR`. The names of the generated files, types, and functions can be customized using command line options. For more information about these options, use `flask typesync generate --help`.
+
+### Using the generated code
+The main output of typesync is a `makeAPI()` function that is used to instantiate an object containing a function per HTTP method per endpoint. An example on how to use this function is provided in [example/frontend/src/api.ts](example/frontend/src/api.ts).
+
+### Rollup Plugin
+Typesync has a rollup plugin that can be used to integrate with Rollup/Vite projects. Additional documentation is provided in [rollup-plugin-typesync/README.md](rollup-plugin-typesync/README.md).
+
+
+## Inference
+
+Typesync is capable of some basic type inference. This can be helpful when trying to incrementally adopt this package in an existing codebase, or for unconventional Flask setups. This functionality is optional, and needs to be enabled using the `--inference` flag. Additionally, the inference module may need to use `eval()` for evaluating some types; this is disabled by default, but can be enabled using `--inference-can-eval`.
+
 
 ## Running Tests
 
@@ -53,45 +77,3 @@ Tests can be run using pytest:
 ```bash
 pytest
 ```
-
-## Usage
-
-The tool is exposed as a Flask CLI command. At the moment, usage is manual.
-
-Inside your Flask application environment, run:
-
-```bash
-flask ts-flask-urls map-urls
-```
-
-This command will:
-
-- Load the Flask app
-- Inspect the URL map and registered view functions
-- Generate the corresponding TypeScript files (types and request helpers)
-
-Output paths and structure are currently minimally configurable and may change as the project evolves.
-
-## High-Level Overview
-
-The tool operates as follows:
-
-1. Flask application discovery
-
-    The Flask CLI command loads the application context and accesses the Flask `url_map`.
-
-2. Route inspection
-
-    Each route rule is inspected to extract:
-    - URL patterns
-    - Path parameters and their Flask converters
-
-3. Type extraction
-
-    Python type annotations on view functions are analyzed to infer the argument types (path parameters) and the return type of each endpoint.
-
-4. TypeScript generation
-
-    The collected metadata is transformed into:
-    - TypeScript type declarations
-    - Typed request functions that build URLs and handle responses

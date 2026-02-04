@@ -2,7 +2,7 @@ from typing import TypedDict
 
 from flask import Flask
 
-from ts_flask_urls.ts_types import TSObject, TSRecord, TSSimpleType, TSTuple
+from typesync.ts_types import TSObject, TSRecord, TSSimpleType, TSTuple
 
 from conftest import ParserFixture
 

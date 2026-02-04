@@ -350,7 +350,7 @@ wheels = [
 ]
 
 [[package]]
-name = "ts-flask-urls"
+name = "typesync"
 version = "0.0.1"
 source = { editable = "." }
 dependencies = [

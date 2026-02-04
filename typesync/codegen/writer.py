@@ -4,18 +4,18 @@ import inflection
 
 if typing.TYPE_CHECKING:
     from io import TextIOBase
-    from ts_flask_urls.ts_types import TSType
+    from typesync.ts_types import TSType
     from .extractor import FlaskRouteTypeExtractor
 
 
 def make_rule_name_map(rule_name: str, prefix: str = "") -> dict[str, str]:
     return {
-        prefix+"pc": inflection.camelize(rule_name, True),
-        prefix+"cc": inflection.camelize(rule_name, False),
-        prefix+"sc": inflection.underscore(rule_name),
-        prefix+"uc": rule_name.replace("_", "").upper(),
-        prefix+"lc": rule_name.replace("_", "").lower(),
-        prefix+"d": rule_name,
+        prefix + "pc": inflection.camelize(rule_name, True),
+        prefix + "cc": inflection.camelize(rule_name, False),
+        prefix + "sc": inflection.underscore(rule_name),
+        prefix + "uc": rule_name.replace("_", "").upper(),
+        prefix + "lc": rule_name.replace("_", "").lower(),
+        prefix + "d": rule_name,
     }
 
 
@@ -41,20 +41,15 @@ class CodeWriter:
         self.stop_on_error = stop_on_error
 
     def _api_function_name(self, rule_name: str, method: str) -> str:
-        return self.function_name_format.format_map({
-            **make_rule_name_map(rule_name, "r_"),
-            **make_rule_name_map(method, "m_")
-        })
+        return self.function_name_format.format_map(
+            {**make_rule_name_map(rule_name, "r_"), **make_rule_name_map(method, "m_")}
+        )
 
     def _return_type_name(self, rule_name: str) -> str:
-        return self.return_type_format.format_map(
-            make_rule_name_map(rule_name)
-        )
+        return self.return_type_format.format_map(make_rule_name_map(rule_name))
 
     def _params_type_name(self, rule_name: str) -> str:
-        return self.params_type_format.format_map(
-            make_rule_name_map(rule_name)
-        )
+        return self.params_type_format.format_map(make_rule_name_map(rule_name))
 
     def write(self, parsers: typing.Iterable["FlaskRouteTypeExtractor"]) -> bool:
         error = False
@@ -82,7 +77,8 @@ class CodeWriter:
                     params_type_name,
                     has_args,
                     has_json,
-                ) for method in (parser.rule.methods or {})
+                )
+                for method in (parser.rule.methods or {})
             )
         self._write_api_footer(names)
         return not error
@@ -146,11 +142,11 @@ class CodeWriter:
         self.api_file.write(
             f"    async function {f_name}({params}): Promise<types.{return_type_name}> {{\n"  # noqa: E501
             f"        const endpoint = {build_url};\n"
-             "        return await requestFn(\n"
-             "            endpoint,\n"
-             '            {method: "' + method + '", ...params}\n'
-             "        );\n"
-             "    }\n\n",
+            "        return await requestFn(\n"
+            "            endpoint,\n"
+            '            {method: "' + method + '", ...params}\n'
+            "        );\n"
+            "    }\n\n",
         )
         return f_name
 
@@ -179,12 +175,11 @@ class CodeWriter:
 
         internal_body_name = f"_{rule_name}Body"
         string_json_body_type = (
-            "undefined" if json_body_type is None
+            "undefined"
+            if json_body_type is None
             else json_body_type.generate(internal_body_name)
         )
-        self.types_file.write(
-            f"type {internal_body_name} = {string_json_body_type};\n"
-        )
+        self.types_file.write(f"type {internal_body_name} = {string_json_body_type};\n")
 
         self.types_file.write(
             f"export interface {params_type_name} extends RequestArgs" + " {\n"
@@ -193,5 +188,8 @@ class CodeWriter:
             "}\n\n"
         )
         return (
-            return_type_name, params_type_name, optional_args == "", optional_body == ""
+            return_type_name,
+            params_type_name,
+            optional_args == "",
+            optional_body == "",
         )

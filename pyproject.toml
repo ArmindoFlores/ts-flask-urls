@@ -1,6 +1,6 @@
 [project]
 version = "0.0.1"
-name = "ts-flask-urls"
+name = "typesync"
 description = "Auto-generate TypeScript client code from Flask routes and Python type annotations."
 readme = "README.md"
 license-files = ["LICENSE"]
@@ -14,12 +14,17 @@ authors = [
   {name = "Francisco Rodrigues", email = "francisco.rodrigues0908@gmail.com"},
 ]
 
+[project.urls]
+Homepage = "https://github.com/ArmindoFlores/typesync"
+GitHub = "https://github.com/ArmindoFlores/typesync"
+
 [build-system]
 requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-packages = ["ts_flask_urls"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["typesync*"]
 
 [dependency-groups]
 dev = [

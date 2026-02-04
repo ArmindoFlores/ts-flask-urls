@@ -1,7 +1,7 @@
 import typing
 from flask import Flask
 
-from ts_flask_urls.ts_types import TSArray, TSRecord, TSSimpleType
+from typesync.ts_types import TSArray, TSRecord, TSSimpleType
 
 from conftest import ParserFixture
 

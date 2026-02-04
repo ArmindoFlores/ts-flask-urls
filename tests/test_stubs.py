@@ -1,7 +1,7 @@
 from flask import Flask
 
-from ts_flask_urls.ts_types import TSSimpleType, TSTuple
-from ts_flask_urls.utils import Response, jsonify
+from typesync.ts_types import TSSimpleType, TSTuple
+from typesync.utils import Response, jsonify
 
 from conftest import ParserFixture
 

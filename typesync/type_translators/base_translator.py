@@ -3,7 +3,7 @@ import typing
 
 from .abstract import Translator
 from .type_node import TypeNode, RecursiveCall
-from ts_flask_urls.ts_types import (
+from typesync.ts_types import (
     TSArray,
     TSObject,
     TSType,

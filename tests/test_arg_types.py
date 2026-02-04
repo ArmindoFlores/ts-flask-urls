@@ -1,6 +1,6 @@
 from flask import Flask
 
-from ts_flask_urls.ts_types import TSObject, TSSimpleType
+from typesync.ts_types import TSObject, TSSimpleType
 
 from conftest import ParserFixture
 
