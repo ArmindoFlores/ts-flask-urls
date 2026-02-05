@@ -3,7 +3,7 @@
 `rollup-plugin-typesync` is a Rollup plugin to automatically generate TypeScript types and client-side request helpers directly from a Flask application. It requires the [typesync](https://github.com/ArmindoFlores/typesync) Python package to be installed and configured in your Flask backend.
 
 ## Installation
-Currently, this plugin can only be installed from source. It will soon be available in the [npm](https://npmjs.com) package registry.
+You can install this plugin using `npm install rollup-plugin-typesync`.
 
 ## Usage
 To enable this plugin, add the following to your `vite.config.ts`:
