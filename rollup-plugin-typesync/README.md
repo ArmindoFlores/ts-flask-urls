@@ -24,4 +24,17 @@ export default defineConfig({
 ```
 
 ## Configuration
-Currently, additional configuration is not possible, but the goal is to support every command line flag avilable when running `flask typesync generate`.
+You can use the plugin's configuration object to specify the values of available flags in the command line utility, such as:
+
+```typescript
+export default defineConfig({
+    plugins: [
+        typesyncPlugin({
+            outDir: "src/flask_urls",
+            backendRoot: "../backend",
+            inference: true,
+            translators: ["custom_translator1.py"]
+        })
+    ]
+});
+```

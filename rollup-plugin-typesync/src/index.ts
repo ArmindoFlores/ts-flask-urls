@@ -1,11 +1,69 @@
 import { Plugin, PluginContext } from "rollup";
-import { spawn, SpawnOptionsWithoutStdio } from "node:child_process";
-import path from "node:path";
-import fg from "fast-glob";
+import { SpawnOptionsWithoutStdio, spawn } from "node:child_process";
 
-export interface TypesyncPluginOptions {
+import fg from "fast-glob";
+import path from "node:path";
+
+interface RequiredTypesyncPluginOptions {
     outDir: string;
     backendRoot: string;
+}
+
+interface OptionalTypesyncPluginOptions {
+    translators: string[];
+    translatorPriorities: Record<string, number>;
+    skipUnannotated: boolean;
+    inference: boolean;
+    inferenceCanEval: boolean;
+    typesFileName: string;
+    apisFileName: string;
+    returnTypeFormat: string;
+    argsTypeFormat: string;
+    functionNameFormat: string;
+}
+
+export type TypesyncPluginOptions = RequiredTypesyncPluginOptions & Partial<OptionalTypesyncPluginOptions>;
+
+function cmdLineArgsFromOptions(options: Partial<OptionalTypesyncPluginOptions>): string[] {
+    const args: string[] = [];
+    for (const translator of options.translators ?? []) {
+        args.push("-t");
+        args.push(translator);
+    }
+    for (const [translator, priority] of Object.entries(options.translatorPriorities ?? {})) {
+        args.push("--translator-priority");
+        args.push(`${translator}:${priority}`);
+    }
+    if (options.skipUnannotated === false) {
+        args.push("--skip-unannotated=false")
+    }
+    if (options.inference) {
+        args.push("-i")
+    }
+    if (options.inferenceCanEval) {
+        args.push("--inference-can-eval")
+    }
+    if (options.typesFileName) {
+        args.push("--types-file");
+        args.push(options.typesFileName);
+    }
+    if (options.apisFileName) {
+        args.push("--apis-file");
+        args.push(options.apisFileName);
+    }
+    if (options.returnTypeFormat) {
+        args.push("--return-type-format");
+        args.push(options.returnTypeFormat);
+    }
+    if (options.argsTypeFormat) {
+        args.push("--args-type-format");
+        args.push(options.argsTypeFormat);
+    }
+    if (options.functionNameFormat) {
+        args.push("--function-name-format");
+        args.push(options.functionNameFormat);
+    }
+    return args;
 }
 
 async function aspawn(command: string, args: readonly string[] | undefined, options?: SpawnOptionsWithoutStdio | undefined): Promise<{status: number|null, output: string}> {
@@ -33,6 +91,7 @@ async function runCodegen(this: PluginContext, options: TypesyncPluginOptions) {
             "typesync",
             "generate",
             path.resolve(outDir),
+            ...cmdLineArgsFromOptions(options)
         ],
         {
             cwd: path.resolve(backendRoot),

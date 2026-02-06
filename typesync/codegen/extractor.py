@@ -58,7 +58,7 @@ class RouteTypeExtractor:
         self,
         app: Flask,
         rule: Rule,
-        translators: tuple[type["Translator"]] | None = None,
+        translators: tuple[type["Translator"], ...] | None = None,
         translator_priorities: dict[str, int] | None = None,
         inference_enabled: bool = False,
         inference_can_eval: bool = False,
