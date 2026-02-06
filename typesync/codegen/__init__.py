@@ -1,7 +1,7 @@
 __all__ = [
     "CodeWriter",
-    "FlaskRouteTypeExtractor",
+    "RouteTypeExtractor",
 ]
 
-from .extractor import FlaskRouteTypeExtractor
+from .extractor import RouteTypeExtractor
 from .writer import CodeWriter

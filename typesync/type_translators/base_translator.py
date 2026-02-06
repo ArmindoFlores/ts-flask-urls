@@ -66,6 +66,15 @@ class BaseTranslator(Translator):
     def _translate_complex_type(
         self, node: TypeNode, generics: dict[typing.TypeVar, TSType]
     ) -> TSType | None:
+        if node.origin not in {
+            dict,
+            list,
+            tuple,
+            types.UnionType,
+            typing.Union,
+        }:
+            return None
+
         translated_args = self._translate_args(node.args, generics)
 
         if node.origin is dict:
@@ -126,6 +135,9 @@ class BaseTranslator(Translator):
 
         if node.origin is RecursiveCall:
             return self._translate_recursive_call(node, generics)
+
+        if isinstance(node.origin, typing.TypeVar):
+            return generics.get(node.origin)
 
         if isinstance(node.origin, typing.TypeAliasType):
             return self._translate_type_alias(node, generics)

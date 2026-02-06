@@ -8,7 +8,7 @@ from prettytable import PrettyTable
 from werkzeug.routing.rules import Rule
 
 from . import argument_types
-from .codegen import CodeWriter, FlaskRouteTypeExtractor
+from .codegen import CodeWriter, RouteTypeExtractor
 
 if typing.TYPE_CHECKING:
     from .type_translators import Translator
@@ -38,6 +38,15 @@ cli = AppGroup("typesync")
     multiple=True,
 )
 @click.option(
+    "--skip-unannotated",
+    type=bool,
+    default=True,
+    help=(
+        "Whether to skip code generation for routes whose annotations are not specified"
+        " and could not be inferred. Defaults to True."
+    ),
+)
+@click.option(
     "--inference",
     "-i",
     is_flag=True,
@@ -63,32 +72,32 @@ cli = AppGroup("typesync")
 )
 @click.option(
     "--return-type-format",
-    default="{pc}ReturnType",
+    default="{r_pc}{m_uc}ReturnType",
     help=(
         "Format string used to generate return type names from the route name. "
         "Available placeholders are: "
-        "{d} (default route name), "
-        "{cc} (camelCase), "
-        "{pc} (PascalCase), "
-        "{uc} (UPPERCASE), "
-        "{lc} (lowercase), "
-        "{sc} (snake_case). "
-        "Defaults to: '{pc}ReturnType'."
+        "{r_d} or {m_d} (default route name or HTTP method), "
+        "{r_cc} or {m_cc} (camelCase), "
+        "{r_pc} or {m_pc} (PascalCase), "
+        "{r_uc} or {m_uc} (UPPERCASE), "
+        "{r_lc} or {m_lc} (lowercase), "
+        "{r_sc} or {m_sc} (snake_case). "
+        "Defaults to: '{r_pc}{m_uc}ReturnType'."
     ),
 )
 @click.option(
     "--args-type-format",
-    default="{pc}ArgsType",
+    default="{r_pc}{m_uc}ArgsType",
     help=(
         "Format string used to generate argument type names from the route name. "
         "Available placeholders are: "
-        "{d} (default route name), "
-        "{cc} (camelCase), "
-        "{pc} (PascalCase), "
-        "{uc} (UPPERCASE), "
-        "{lc} (lowercase), "
-        "{sc} (snake_case). "
-        "Defaults to: '{pc}ArgsType'."
+        "{r_d} or {m_d} (default route name or HTTP method), "
+        "{r_cc} or {m_cc} (camelCase), "
+        "{r_pc} or {m_pc} (PascalCase), "
+        "{r_uc} or {m_uc} (UPPERCASE), "
+        "{r_lc} or {m_lc} (lowercase), "
+        "{r_sc} or {m_sc} (snake_case). "
+        "Defaults to: '{r_pc}{m_uc}ArgsType'."
     ),
 )
 @click.option(
@@ -109,10 +118,11 @@ cli = AppGroup("typesync")
 def generate(
     out_dir: str,
     endpoint: str,
-    translator: tuple["Translator", ...],
+    translator: tuple[type["Translator"], ...],
     translator_priority: tuple[tuple[str, int], ...],
     inference: bool,
     inference_can_eval: bool,
+    skip_unannotated: bool,
     types_file: str,
     apis_file: str,
     return_type_format: str,
@@ -138,13 +148,14 @@ def generate(
             endpoint,
         )
         result = code_writer.write(
-            FlaskRouteTypeExtractor(
+            RouteTypeExtractor(
                 current_app,
                 rule,
                 translators=translator,
                 translator_priorities=dict(translator_priority),
                 inference_enabled=inference,
                 inference_can_eval=inference_can_eval,
+                skip_unannotated=skip_unannotated,
             )
             for rule in rules
         )
@@ -154,7 +165,9 @@ def generate(
 
 @cli.command(help="Show available translators and their default priorities.")
 def list_translators():
-    translators = FlaskRouteTypeExtractor.default_translators()
+    translators = RouteTypeExtractor.sort_translators(
+        RouteTypeExtractor.default_translators(), {}
+    )
     table = PrettyTable()
     table.field_names = ["ID", "Priority"]
     table.add_rows(

@@ -4,7 +4,7 @@ import flask
 import pytest
 
 from typesync.ts_types import TSType
-from typesync.codegen.extractor import FlaskRouteTypeExtractor
+from typesync.codegen.extractor import RouteTypeExtractor
 
 
 @pytest.fixture
@@ -22,7 +22,7 @@ def args_parser():
         rules = app.url_map.iter_rules()
         for rule in rules:
             if rule.endpoint == endpoint:
-                return FlaskRouteTypeExtractor(app, rule).parse_args_type()
+                return RouteTypeExtractor(app, rule).parse_args_types().get("GET")
         return None
 
     return inner
@@ -34,7 +34,7 @@ def return_parser():
         rules = app.url_map.iter_rules()
         for rule in rules:
             if rule.endpoint == endpoint:
-                return FlaskRouteTypeExtractor(app, rule).parse_return_type()
+                return RouteTypeExtractor(app, rule).parse_return_types().get("GET")
         return None
 
     return inner
@@ -46,9 +46,13 @@ def inf_return_parser():
         rules = app.url_map.iter_rules()
         for rule in rules:
             if rule.endpoint == endpoint:
-                return FlaskRouteTypeExtractor(
-                    app, rule, inference_enabled=True, inference_can_eval=True
-                ).parse_return_type()
+                return (
+                    RouteTypeExtractor(
+                        app, rule, inference_enabled=True, inference_can_eval=True
+                    )
+                    .parse_return_types()
+                    .get("GET")
+                )
         return None
 
     return inner

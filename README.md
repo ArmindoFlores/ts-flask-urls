@@ -21,9 +21,9 @@ Some features are already implemented, others are planned.
 - [x] Support for multiple HTTP methods (GET, POST, PUT, DELETE, etc.)
 - [x] Support for JSON request bodies with typed parameters
     - [ ] Support validators such as pydantic
-- [ ] Support for `typing.Annotated` to:
+- [x] Support for `typing.Annotated` to:
     - [ ] Ignore specific routes
-    - [ ] Customize generation behavior (naming, visibility, etc.)
+    - [x] Customize generation behavior (naming, visibility, etc.)
 - [ ] Improved error reporting for unsupported or ambiguous annotations
 - [ ] Optional generation modes (types only, requests only)
 - [ ] Configuration file support

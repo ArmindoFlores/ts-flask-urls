@@ -17,43 +17,49 @@ class PythonModuleParamType(ParamType):
             return value
 
         if not isinstance(value, str):
-            self.fail(f"{value!r} is not a valid value", param, ctx)
+            return self.fail(f"{value!r} is not a valid value", param, ctx)
 
         path = pathlib.Path(value).resolve()
 
         if not path.exists:
-            self.fail(f"file {value!r} does not exist", param, ctx)
+            return self.fail(f"file {value!r} does not exist", param, ctx)
 
         if not path.is_file():
-            self.fail(f"{value!r} is not a file", param, ctx)
+            return self.fail(f"{value!r} is not a file", param, ctx)
 
         mod_name = f"module_{hashlib.sha256(str(path).encode()).hexdigest()[:16]}"
         spec = importlib.util.spec_from_file_location(mod_name, str(path))
         if spec is None or spec.loader is None:
-            self.fail(f"{value!r} is not a valid python module", param, ctx)
+            return self.fail(f"{value!r} is not a valid python module", param, ctx)
 
         try:
             module = importlib.util.module_from_spec(spec)
         except ModuleNotFoundError:
-            self.fail(f"{value!r} is not a valid python module", param, ctx)
+            return self.fail(f"{value!r} is not a valid python module", param, ctx)
 
         sys.modules[mod_name] = module
         try:
             spec.loader.exec_module(module)
         except Exception as e:
             del sys.modules[mod_name]
-            self.fail(f"could not load module at {value!r} ({e})", param, ctx)
+            return self.fail(f"could not load module at {value!r} ({e})", param, ctx)
 
         return module
 
 
-class TranslatorPluginParamType(PythonModuleParamType):
+class TranslatorPluginParamType(ParamType):
+    name = "translator_plugin"
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.python_module_plugin_param_type = PythonModuleParamType()
+
     def convert(self, value, param, ctx) -> type[Translator]:
-        module = super().convert(value, param, ctx)
+        module = self.python_module_plugin_param_type.convert(value, param, ctx)
 
         translator_func = getattr(module, "translator", None)
         if translator_func is None:
-            self.fail(
+            return self.fail(
                 f"{value!r} must define a function 'translator() -> type[Translator]'",
                 param,
                 ctx,
@@ -61,14 +67,14 @@ class TranslatorPluginParamType(PythonModuleParamType):
         try:
             translator = translator_func()
         except Exception as e:
-            self.fail(
+            return self.fail(
                 f"failed to run the 'translator()' function defined by {value!r} ({e})",
                 param,
                 ctx,
             )
 
         if not issubclass(translator, Translator):
-            self.fail(
+            return self.fail(
                 f"'translator()' function defined by {value!r} must return a class "
                 "that inherits from typesync.type_translators.Translator",
                 param,
@@ -79,22 +85,26 @@ class TranslatorPluginParamType(PythonModuleParamType):
 
 
 class TranslatorPriorityParamType(ParamType):
+    name = "translator_priority"
+
     def convert(self, value, param, ctx) -> tuple[str, int]:
         if isinstance(value, tuple):
             return value
 
         if not isinstance(value, str):
-            self.fail(f"{value!r} is not a valid value", param, ctx)
+            return self.fail(f"{value!r} is not a valid value", param, ctx)
 
         id_and_priority = value.rsplit(":", 1)
         if len(id_and_priority) != 2:
-            self.fail(f"must be of the form ID:PRIORITY (was {value!r})", param, ctx)
+            return self.fail(
+                f"must be of the form ID:PRIORITY (was {value!r})", param, ctx
+            )
 
         id_, priority_str = id_and_priority
         try:
             priority = int(priority_str)
         except ValueError:
-            self.fail(
+            return self.fail(
                 f"priority {priority_str!r} cannot be converted to an int", param, ctx
             )
 
