@@ -76,7 +76,7 @@ class CodeWriter:
                 args_type=args_types.get(method, TSSimpleType("undefined")),
                 json_body_type=json_body_types.get(method, TSSimpleType("undefined")),
             )
-            for method in methods
+            for method in sorted(methods)
         }
 
     def write(self, parsers: typing.Iterable["RouteTypeExtractor"]) -> bool:

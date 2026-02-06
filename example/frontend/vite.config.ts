@@ -1,7 +1,6 @@
 import { defineConfig } from "vite";
-import typesyncPlugin from "rollup-plugin-typesync";
 import react from "@vitejs/plugin-react";
-
+import typesyncPlugin from "rollup-plugin-typesync";
 
 // https://vite.dev/config/
 export default defineConfig({

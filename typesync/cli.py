@@ -130,7 +130,10 @@ def generate(
     function_name_format: str,
     samefile: str | None = None,
 ):
-    rules: list[Rule] = list(current_app.url_map.iter_rules())
+    rules: list[Rule] = sorted(
+        current_app.url_map.iter_rules(),
+        key=lambda rule: rule.endpoint
+    )
 
     os.makedirs(out_dir, exist_ok=True)
 

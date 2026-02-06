@@ -8,31 +8,31 @@ export function buildUrl(rule: string, params: Record<string, any>) {
 }
 
 export function makeAPI(requestFn: types.RequestFunction) {
-    async function getStatic(params: types.StaticArgsType): Promise<types.StaticReturnType> {
-        const endpoint = buildUrl("/static/<filename>", params.args);
+    async function getComplex_(params: types.Complex_GETArgsType): Promise<types.Complex_GETReturnType> {
+        const endpoint = "/complex";
         return await requestFn(
             endpoint,
             {method: "GET", ...params}
         );
     }
 
-    async function headStatic(params: types.StaticArgsType): Promise<types.StaticReturnType> {
-        const endpoint = buildUrl("/static/<filename>", params.args);
+    async function headComplex_(params: types.Complex_HEADArgsType): Promise<types.Complex_HEADReturnType> {
+        const endpoint = "/complex";
         return await requestFn(
             endpoint,
             {method: "HEAD", ...params}
         );
     }
 
-    async function optionsStatic(params: types.StaticArgsType): Promise<types.StaticReturnType> {
-        const endpoint = buildUrl("/static/<filename>", params.args);
+    async function optionsComplex_(params: types.Complex_OPTIONSArgsType): Promise<types.Complex_OPTIONSReturnType> {
+        const endpoint = "/complex";
         return await requestFn(
             endpoint,
             {method: "OPTIONS", ...params}
         );
     }
 
-    async function getMain(params: types.MainArgsType): Promise<types.MainReturnType> {
+    async function getMain(params: types.MainGETArgsType): Promise<types.MainGETReturnType> {
         const endpoint = "/main";
         return await requestFn(
             endpoint,
@@ -40,7 +40,23 @@ export function makeAPI(requestFn: types.RequestFunction) {
         );
     }
 
-    async function postMain(params: types.MainArgsType): Promise<types.MainReturnType> {
+    async function headMain(params: types.MainHEADArgsType): Promise<types.MainHEADReturnType> {
+        const endpoint = "/main";
+        return await requestFn(
+            endpoint,
+            {method: "HEAD", ...params}
+        );
+    }
+
+    async function optionsMain(params: types.MainOPTIONSArgsType): Promise<types.MainOPTIONSReturnType> {
+        const endpoint = "/main";
+        return await requestFn(
+            endpoint,
+            {method: "OPTIONS", ...params}
+        );
+    }
+
+    async function postMain(params: types.MainPOSTArgsType): Promise<types.MainPOSTReturnType> {
         const endpoint = "/main";
         return await requestFn(
             endpoint,
@@ -48,71 +64,7 @@ export function makeAPI(requestFn: types.RequestFunction) {
         );
     }
 
-    async function headMain(params: types.MainArgsType): Promise<types.MainReturnType> {
-        const endpoint = "/main";
-        return await requestFn(
-            endpoint,
-            {method: "HEAD", ...params}
-        );
-    }
-
-    async function optionsMain(params: types.MainArgsType): Promise<types.MainReturnType> {
-        const endpoint = "/main";
-        return await requestFn(
-            endpoint,
-            {method: "OPTIONS", ...params}
-        );
-    }
-
-    async function getComplex_(params: types.Complex_ArgsType): Promise<types.Complex_ReturnType> {
-        const endpoint = "/complex";
-        return await requestFn(
-            endpoint,
-            {method: "GET", ...params}
-        );
-    }
-
-    async function headComplex_(params: types.Complex_ArgsType): Promise<types.Complex_ReturnType> {
-        const endpoint = "/complex";
-        return await requestFn(
-            endpoint,
-            {method: "HEAD", ...params}
-        );
-    }
-
-    async function optionsComplex_(params: types.Complex_ArgsType): Promise<types.Complex_ReturnType> {
-        const endpoint = "/complex";
-        return await requestFn(
-            endpoint,
-            {method: "OPTIONS", ...params}
-        );
-    }
-
-    async function getWithArgs(params: types.WithArgsArgsType): Promise<types.WithArgsReturnType> {
-        const endpoint = buildUrl("/with/<arg>/args", params.args);
-        return await requestFn(
-            endpoint,
-            {method: "GET", ...params}
-        );
-    }
-
-    async function headWithArgs(params: types.WithArgsArgsType): Promise<types.WithArgsReturnType> {
-        const endpoint = buildUrl("/with/<arg>/args", params.args);
-        return await requestFn(
-            endpoint,
-            {method: "HEAD", ...params}
-        );
-    }
-
-    async function optionsWithArgs(params: types.WithArgsArgsType): Promise<types.WithArgsReturnType> {
-        const endpoint = buildUrl("/with/<arg>/args", params.args);
-        return await requestFn(
-            endpoint,
-            {method: "OPTIONS", ...params}
-        );
-    }
-
-    async function getPytest(params: types.PytestArgsType): Promise<types.PytestReturnType> {
+    async function getPytest(params: types.PytestGETArgsType): Promise<types.PytestGETReturnType> {
         const endpoint = "/pytest";
         return await requestFn(
             endpoint,
@@ -120,7 +72,7 @@ export function makeAPI(requestFn: types.RequestFunction) {
         );
     }
 
-    async function headPytest(params: types.PytestArgsType): Promise<types.PytestReturnType> {
+    async function headPytest(params: types.PytestHEADArgsType): Promise<types.PytestHEADReturnType> {
         const endpoint = "/pytest";
         return await requestFn(
             endpoint,
@@ -128,8 +80,56 @@ export function makeAPI(requestFn: types.RequestFunction) {
         );
     }
 
-    async function optionsPytest(params: types.PytestArgsType): Promise<types.PytestReturnType> {
+    async function optionsPytest(params: types.PytestOPTIONSArgsType): Promise<types.PytestOPTIONSReturnType> {
         const endpoint = "/pytest";
+        return await requestFn(
+            endpoint,
+            {method: "OPTIONS", ...params}
+        );
+    }
+
+    async function getStatic(params: types.StaticGETArgsType): Promise<types.StaticGETReturnType> {
+        const endpoint = buildUrl("/static/<filename>", params.args);
+        return await requestFn(
+            endpoint,
+            {method: "GET", ...params}
+        );
+    }
+
+    async function headStatic(params: types.StaticHEADArgsType): Promise<types.StaticHEADReturnType> {
+        const endpoint = buildUrl("/static/<filename>", params.args);
+        return await requestFn(
+            endpoint,
+            {method: "HEAD", ...params}
+        );
+    }
+
+    async function optionsStatic(params: types.StaticOPTIONSArgsType): Promise<types.StaticOPTIONSReturnType> {
+        const endpoint = buildUrl("/static/<filename>", params.args);
+        return await requestFn(
+            endpoint,
+            {method: "OPTIONS", ...params}
+        );
+    }
+
+    async function getWithArgs(params: types.WithArgsGETArgsType): Promise<types.WithArgsGETReturnType> {
+        const endpoint = buildUrl("/with/<arg>/args", params.args);
+        return await requestFn(
+            endpoint,
+            {method: "GET", ...params}
+        );
+    }
+
+    async function headWithArgs(params: types.WithArgsHEADArgsType): Promise<types.WithArgsHEADReturnType> {
+        const endpoint = buildUrl("/with/<arg>/args", params.args);
+        return await requestFn(
+            endpoint,
+            {method: "HEAD", ...params}
+        );
+    }
+
+    async function optionsWithArgs(params: types.WithArgsOPTIONSArgsType): Promise<types.WithArgsOPTIONSReturnType> {
+        const endpoint = buildUrl("/with/<arg>/args", params.args);
         return await requestFn(
             endpoint,
             {method: "OPTIONS", ...params}
@@ -137,21 +137,21 @@ export function makeAPI(requestFn: types.RequestFunction) {
     }
 
     return {
-        getStatic,
-        headStatic,
-        optionsStatic,
-        getMain,
-        postMain,
-        headMain,
-        optionsMain,
         getComplex_,
         headComplex_,
         optionsComplex_,
-        getWithArgs,
-        headWithArgs,
-        optionsWithArgs,
+        getMain,
+        headMain,
+        optionsMain,
+        postMain,
         getPytest,
         headPytest,
         optionsPytest,
+        getStatic,
+        headStatic,
+        optionsStatic,
+        getWithArgs,
+        headWithArgs,
+        optionsWithArgs,
     };
 }
