@@ -36,30 +36,58 @@ class ASTVisitor(ast.NodeVisitor):
     def get_constant(self, constant: ast.Constant) -> typing.Any:
         try:
             constant_value = ast.literal_eval(constant)
+            if isinstance(constant_value, (str, float, int, bool)):
+                return typing.Literal[constant_value]
             return type(constant_value)
         except Exception:
             return None
 
-    def get_type_if_all_equal(self, expressions: list[ast.expr]) -> typing.Any:
+    def closest_common_parent_type(
+        self, type1: typing.Any, type2: typing.Any
+    ) -> typing.Any:
+        if type1 == type2:
+            return type1
+
+        types = [type1, type2]
+
+        # 1st case: literals are an instance of their underlying type
+        for i, type_ in enumerate(types):
+            if typing.get_origin(type_) is typing.Literal:
+                args = typing.get_args(type_)
+                if len(args) != 1:
+                    continue
+                types[i] = type(args[0])
+
+        if types[0] == types[1]:
+            return types[0]
+
+        # 2nd case: one is a more generic version of the same type, such as
+        # dict and dict[str, int]
+        origins = [typing.get_origin(type_) or type_ for type_ in types]
+        if origins[0] == origins[1]:
+            return origins[0]
+
+        return None
+
+    def get_combined_type(self, expressions: list[ast.expr]) -> typing.Any:
         if len(expressions) == 0:
             return None
         if len(expressions) == 1:
             return self.get_value(expressions[0])
 
-        el_types: dict[ast.expr, typing.Any] = {}
-        for el1, el2 in itertools.pairwise(expressions):
-            el1_type = el_types[el1] if el1 in el_types else self.get_value(el1)
-            el_types.setdefault(el1, el1_type)
+        most_generic_type = self.get_value(expressions[0])
+        for element in expressions[1:]:
+            most_generic_type = self.closest_common_parent_type(
+                self.get_value(element),
+                most_generic_type
+            )
+            if most_generic_type is None:
+                break
 
-            el2_type = el_types[el2] if el2 in el_types else self.get_value(el2)
-            el_types.setdefault(el2, el2_type)
-            if el1_type != el2_type:
-                return None
-
-        return el_types[el1]
+        return most_generic_type
 
     def get_list(self, list_: ast.List) -> typing.Any:
-        list_type = self.get_type_if_all_equal(list_.elts)
+        list_type = self.get_combined_type(list_.elts)
         return list if list_type is None else list[list_type]
 
     def get_tuple(self, tuple_: ast.Tuple) -> typing.Any:
@@ -73,8 +101,8 @@ class ASTVisitor(ast.NodeVisitor):
             # TODO: support unpacking
             return dict
         keys = typing.cast(list[ast.expr], dict_.keys)
-        keys_type = self.get_type_if_all_equal(keys)
-        values_type = self.get_type_if_all_equal(dict_.values)
+        keys_type = self.get_combined_type(keys)
+        values_type = self.get_combined_type(dict_.values)
 
         if keys_type is None and values_type is None:
             return dict

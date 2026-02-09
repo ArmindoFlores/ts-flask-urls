@@ -136,6 +136,12 @@ class BaseTranslator(Translator):
         if node.origin is RecursiveCall:
             return self._translate_recursive_call(node, generics)
 
+        if node.origin is typing.Literal and len(node.args) == 1:
+            # FIXME: perhaps don't generalize?
+            # FIXME: handle non-simple types
+            obj = node.args[0].origin
+            return self._translate_simple_type(type(obj))
+
         if isinstance(node.origin, typing.TypeVar):
             return generics.get(node.origin)
 
