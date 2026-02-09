@@ -42,34 +42,9 @@ class ASTVisitor(ast.NodeVisitor):
         except Exception:
             return None
 
-    def closest_common_parent_type(
-        self, type1: typing.Any, type2: typing.Any
+    def get_combined_type(
+        self, expressions: list[ast.expr], allow_literals: bool = True
     ) -> typing.Any:
-        if type1 == type2:
-            return type1
-
-        types = [type1, type2]
-
-        # 1st case: literals are an instance of their underlying type
-        for i, type_ in enumerate(types):
-            if typing.get_origin(type_) is typing.Literal:
-                args = typing.get_args(type_)
-                if len(args) != 1:
-                    continue
-                types[i] = type(args[0])
-
-        if types[0] == types[1]:
-            return types[0]
-
-        # 2nd case: one is a more generic version of the same type, such as
-        # dict and dict[str, int]
-        origins = [typing.get_origin(type_) or type_ for type_ in types]
-        if origins[0] == origins[1]:
-            return origins[0]
-
-        return None
-
-    def get_combined_type(self, expressions: list[ast.expr]) -> typing.Any:
         if len(expressions) == 0:
             return None
         if len(expressions) == 1:
@@ -77,9 +52,10 @@ class ASTVisitor(ast.NodeVisitor):
 
         most_generic_type = self.get_value(expressions[0])
         for element in expressions[1:]:
-            most_generic_type = self.closest_common_parent_type(
+            most_generic_type = closest_common_parent_type(
                 self.get_value(element),
-                most_generic_type
+                most_generic_type,
+                allow_literals=allow_literals
             )
             if most_generic_type is None:
                 break
@@ -87,7 +63,7 @@ class ASTVisitor(ast.NodeVisitor):
         return most_generic_type
 
     def get_list(self, list_: ast.List) -> typing.Any:
-        list_type = self.get_combined_type(list_.elts)
+        list_type = self.get_combined_type(list_.elts, False)
         return list if list_type is None else list[list_type]
 
     def get_tuple(self, tuple_: ast.Tuple) -> typing.Any:
@@ -149,7 +125,6 @@ class ASTVisitor(ast.NodeVisitor):
         annotations = getattr(called_function, "__annotations__", {})
         if "return" not in annotations:
             return infer_return_type(called_function, self.logger, self.can_eval)
-
         return annotations["return"]
 
     def from_method_call(self, method: ast.Attribute) -> typing.Any:
@@ -246,6 +221,89 @@ def define_types_from_signature(function: typing.Callable, visitor: ASTVisitor) 
         pass
 
 
+def closest_common_parent_type(
+        type1: typing.Any, type2: typing.Any, allow_literals: bool = True
+    ) -> typing.Any:
+        if type1 == type2:
+            return type1
+
+        types = [type1, type2]
+        literals = True
+
+        # 1st case: literals are an instance of their underlying type
+        for i, type_ in enumerate(types):
+            if typing.get_origin(type_) is typing.Literal:
+                args = typing.get_args(type_)
+                if len(args) < 1:
+                    continue
+                types[i] = type(args[0])
+            else:
+                literals = False
+
+        if types[0] == types[1]:
+            if literals and allow_literals:
+                total_args = [
+                    *typing.get_args(type1), *typing.get_args(type2)
+                ]
+                args_without_duplicates = list(set(total_args))
+                if len(args_without_duplicates) > 1 and types[0] is bool:
+                    # Special case: typing.Literal[True, False] <=> bool
+                    return bool
+                if len(args_without_duplicates) < 10:
+                    # If there are less than 10 literal types, return
+                    # a literal with all of those options.
+                    # FIXME: don't use magic number
+                    return typing.Literal[*args_without_duplicates]
+            # Return the underlying type
+            return types[0]
+
+        # 2nd case: one is a more generic version of the same type, such as
+        # dict and dict[str, int]
+        origins = [typing.get_origin(type_) or type_ for type_ in types]
+        if origins[0] == origins[1]:
+            return origins[0]
+
+        return None
+
+
+def flatten_union(type_: typing.Any) -> list:
+    return flatten_unions(typing.get_args(type_))
+
+
+def flatten_unions(type_list: typing.Sequence) -> list:
+    result = []
+    for type_ in type_list:
+        origin = typing.get_origin(type_)
+        if origin in {typing.Union, types.UnionType}:
+            result.extend(flatten_union(type_))
+        else:
+            result.append(type_)
+    return result
+
+
+def coalesce_types(type_list: list) -> list:
+    if len(type_list) <= 1:
+        return type_list
+
+    result = type_list[:]
+    i = 0
+    j = 1
+    while i + j < len(result):
+        if result[i] != result[i+j]:
+            common = closest_common_parent_type(
+                result[i], result[i+j]
+            )
+            if common is not None:
+                result[i] = result[i+j] = common
+                i = 0
+                j = 0
+        j += 1
+        if i + j >= len(result):
+            j = 1
+            i += 1
+
+    return list(set(result))
+
 def infer_return_type(
     function: typing.Callable, logger: "Logger", can_eval: bool
 ) -> typing.Any:
@@ -270,8 +328,10 @@ def infer_return_type(
     if len(visitor.returns) == 0:
         return type(None)
 
-    for rt1, rt2 in itertools.pairwise(visitor.returns):
-        if rt1 != rt2:
-            return typing.Any
+    possible_return_types = flatten_unions(visitor.returns)
+    coalesced_return_types = coalesce_types(possible_return_types)
 
-    return visitor.returns[0]
+    if len(coalesced_return_types) == 1:
+        return coalesced_return_types[0]
+
+    return typing.Union[*coalesced_return_types]
