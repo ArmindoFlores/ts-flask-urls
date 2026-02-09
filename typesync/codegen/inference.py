@@ -1,7 +1,6 @@
 import ast
 import builtins
 import inspect
-import itertools
 import textwrap
 import types
 import typing
