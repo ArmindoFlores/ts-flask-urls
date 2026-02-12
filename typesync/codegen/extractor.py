@@ -94,9 +94,15 @@ class RouteTypeExtractor:
             AnnotationsTranslator,
             BaseTranslator,
             FlaskTranslator,
+            PydanticTranslator,
         )
 
-        return (AnnotationsTranslator, BaseTranslator, FlaskTranslator)
+        return (
+            AnnotationsTranslator,
+            BaseTranslator,
+            FlaskTranslator,
+            PydanticTranslator,
+        )
 
     @property
     def rule_name(self) -> str:

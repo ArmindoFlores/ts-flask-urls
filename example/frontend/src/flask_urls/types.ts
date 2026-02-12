@@ -68,28 +68,20 @@ export interface MainPOSTArgsType extends RequestArgs {
     body?: _mainPOSTBody;
 }
 
-export type PytestGETReturnType = Record<string, [boolean[], number[]]>;
-type _pytestGETArgs = undefined;
-type _pytestGETBody = number;
-export interface PytestGETArgsType extends RequestArgs {
-    args?: _pytestGETArgs;
-    body: _pytestGETBody;
+export type PydanticOPTIONSReturnType = Record<string, [boolean[], number[]]>;
+type _pydanticOPTIONSArgs = undefined;
+type _pydanticOPTIONSBody = {x: number;};
+export interface PydanticOPTIONSArgsType extends RequestArgs {
+    args?: _pydanticOPTIONSArgs;
+    body: _pydanticOPTIONSBody;
 }
 
-export type PytestHEADReturnType = Record<string, [boolean[], number[]]>;
-type _pytestHEADArgs = undefined;
-type _pytestHEADBody = number;
-export interface PytestHEADArgsType extends RequestArgs {
-    args?: _pytestHEADArgs;
-    body: _pytestHEADBody;
-}
-
-export type PytestOPTIONSReturnType = Record<string, [boolean[], number[]]>;
-type _pytestOPTIONSArgs = undefined;
-type _pytestOPTIONSBody = number;
-export interface PytestOPTIONSArgsType extends RequestArgs {
-    args?: _pytestOPTIONSArgs;
-    body: _pytestOPTIONSBody;
+export type PydanticPOSTReturnType = Record<string, [boolean[], number[]]>;
+type _pydanticPOSTArgs = undefined;
+type _pydanticPOSTBody = {x: number;};
+export interface PydanticPOSTArgsType extends RequestArgs {
+    args?: _pydanticPOSTArgs;
+    body: _pydanticPOSTBody;
 }
 
 export type StaticGETReturnType = undefined;
@@ -139,4 +131,3 @@ export interface WithArgsOPTIONSArgsType extends RequestArgs {
     args: _with_argsOPTIONSArgs;
     body?: _with_argsOPTIONSBody;
 }
-

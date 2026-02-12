@@ -1,5 +1,7 @@
 import sys
 
+import pydantic
+
 sys.path.append("../..")
 
 import typing
@@ -9,7 +11,7 @@ from flask_cors import CORS
 from werkzeug.routing import BaseConverter
 
 import typesync
-from typesync.utils import Response, jsonify
+from typesync.utils import Response, Loadable, jsonify, with_json_body, deferred
 
 
 class CustomConverter(BaseConverter):
@@ -53,7 +55,7 @@ def main() -> APIResult[IntOrString, bool | None]:
 def complex_() -> dict[str, tuple[IntOrString, ...]]:
     return {
         "entry1": (1, "a", 2),
-        "entray2": ("x", "y"),
+        "entry2": ("x", "y"),
     }
 
 
@@ -63,7 +65,12 @@ def with_args(arg: bool) -> Response[tuple[Sandwich[bool, str], int]]:
     return jsonify((value, 200))
 
 
-@app.route("/pytest", methods=("POST",))
-@typesync.utils.with_json_body
-def pytest(json: int) -> Response[AliasedArgs[int, bool]]:
-    return jsonify({"hello": ([], [json])})
+class MyModel(pydantic.BaseModel):
+    x: int
+
+
+@app.route("/pydantic", methods=("POST",))
+@with_json_body(loader=deferred(MyModel.model_validate))
+def pydantic(json: Loadable[MyModel]) -> Response[AliasedArgs[int, bool]]:
+    model = json.load()
+    return jsonify({"hello": ([], [model.x])})

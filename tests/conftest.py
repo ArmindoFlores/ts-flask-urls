@@ -41,6 +41,18 @@ def return_parser():
 
 
 @pytest.fixture
+def json_body_parser():
+    def inner(app: flask.Flask, endpoint: str) -> TSType | None:
+        rules = app.url_map.iter_rules()
+        for rule in rules:
+            if rule.endpoint == endpoint:
+                return RouteTypeExtractor(app, rule).parse_json_body().get("POST")
+        return None
+
+    return inner
+
+
+@pytest.fixture
 def inf_return_parser():
     def inner(app: flask.Flask, endpoint: str) -> TSType | None:
         rules = app.url_map.iter_rules()

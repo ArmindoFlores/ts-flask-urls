@@ -20,7 +20,7 @@ Some features are already implemented, others are planned.
 - [x] Handling of Flask converters (custom and built-in)
 - [x] Support for multiple HTTP methods (GET, POST, PUT, DELETE, etc.)
 - [x] Support for JSON request bodies with typed parameters
-    - [ ] Support validators such as pydantic
+    - [x] Support validators such as pydantic
 - [x] Support for `typing.Annotated` to:
     - [ ] Ignore specific routes
     - [x] Customize generation behavior (naming, visibility, etc.)

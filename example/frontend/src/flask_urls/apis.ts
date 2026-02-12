@@ -64,27 +64,19 @@ export function makeAPI(requestFn: types.RequestFunction) {
         );
     }
 
-    async function getPytest(params: types.PytestGETArgsType): Promise<types.PytestGETReturnType> {
-        const endpoint = "/pytest";
-        return await requestFn(
-            endpoint,
-            {method: "GET", ...params}
-        );
-    }
-
-    async function headPytest(params: types.PytestHEADArgsType): Promise<types.PytestHEADReturnType> {
-        const endpoint = "/pytest";
-        return await requestFn(
-            endpoint,
-            {method: "HEAD", ...params}
-        );
-    }
-
-    async function optionsPytest(params: types.PytestOPTIONSArgsType): Promise<types.PytestOPTIONSReturnType> {
-        const endpoint = "/pytest";
+    async function optionsPydantic(params: types.PydanticOPTIONSArgsType): Promise<types.PydanticOPTIONSReturnType> {
+        const endpoint = "/pydantic";
         return await requestFn(
             endpoint,
             {method: "OPTIONS", ...params}
+        );
+    }
+
+    async function postPydantic(params: types.PydanticPOSTArgsType): Promise<types.PydanticPOSTReturnType> {
+        const endpoint = "/pydantic";
+        return await requestFn(
+            endpoint,
+            {method: "POST", ...params}
         );
     }
 
@@ -144,9 +136,8 @@ export function makeAPI(requestFn: types.RequestFunction) {
         headMain,
         optionsMain,
         postMain,
-        getPytest,
-        headPytest,
-        optionsPytest,
+        optionsPydantic,
+        postPydantic,
         getStatic,
         headStatic,
         optionsStatic,

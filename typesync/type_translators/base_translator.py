@@ -14,6 +14,7 @@ from typesync.ts_types import (
     TSUnion,
     is_signal,
 )
+from typesync.utils import Loadable
 
 
 class BaseTranslator(Translator):
@@ -135,6 +136,12 @@ class BaseTranslator(Translator):
 
         if node.origin is RecursiveCall:
             return self._translate_recursive_call(node, generics)
+
+        if node.origin is Loadable and len(node.args) == 1:
+            if self.ctx.mode != "JSON":
+                # Loadable[T] can only be used in the JSON body
+                return None
+            return self._translate(node.args[0], generics)
 
         if node.origin is typing.Literal and len(node.args) >= 1:
             # FIXME: perhaps don't generalize?
